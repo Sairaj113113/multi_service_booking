@@ -8,6 +8,7 @@ import com.booking.repository.ServiceRepository;
 import com.booking.repository.UserRepository;
 import com.booking.security.CustomUserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +24,9 @@ public class ServiceService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public ServiceResponse createService(ServiceRequest request, CustomUserDetails currentUser) {
+
         User provider = userRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Provider not found"));
 
@@ -35,10 +38,10 @@ public class ServiceService {
                 .provider(provider)
                 .build();
 
-        com.booking.entity.Service saved = serviceRepository.save(service);
-        return mapToResponse(saved);
+        return mapToResponse(serviceRepository.save(service));
     }
 
+    @Transactional(readOnly = true)
     public List<ServiceResponse> getAllServices() {
         return serviceRepository.findAll()
                 .stream()
@@ -46,13 +49,17 @@ public class ServiceService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ServiceResponse getServiceById(Long id) {
+
         com.booking.entity.Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + id));
+
         return mapToResponse(service);
     }
 
     private ServiceResponse mapToResponse(com.booking.entity.Service service) {
+
         return ServiceResponse.builder()
                 .id(service.getId())
                 .name(service.getName())
