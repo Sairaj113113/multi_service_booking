@@ -1,11 +1,11 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   datasource:
-    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
-    username: postgres.zxyfjaokfeeyjiazdyie
-    password: dgdOWSVx3F7YLHsj
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -18,5 +18,5 @@ spring:
 
 app:
   jwt:
-    secret: mySuperSecretKeymySuperSecretKeymySuperSecretKey
-    expiration-ms: 86400000
+    secret: ${APP_JWT_SECRET}
+    expiration-ms: ${APP_JWT_EXPIRATION_MS}
