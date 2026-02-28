@@ -1,5 +1,7 @@
 package com.booking.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -30,6 +32,7 @@ public class Service {
     private Integer durationMinutes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "provider_id", nullable = false)
-    private User provider;
+@JoinColumn(name = "provider_id")
+@JsonIgnore
+private User provider;
 }
