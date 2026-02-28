@@ -9,13 +9,12 @@ import com.booking.exception.ResourceNotFoundException;
 import com.booking.repository.ServiceRepository;
 import com.booking.repository.SlotRepository;
 import com.booking.security.CustomUserDetails;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@org.springframework.stereotype.Service
 @Transactional
 public class SlotService {
 
@@ -85,7 +84,7 @@ public class SlotService {
         return SlotResponse.builder()
                 .id(slot.getId())
                 .serviceId(slot.getService().getId())
-                .serviceName(slot.getService().getName()) // ✅ now safe
+                .serviceName(slot.getService().getName())
                 .startTime(slot.getStartTime())
                 .endTime(slot.getEndTime())
                 .available(slot.getAvailable())
