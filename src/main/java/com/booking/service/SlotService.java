@@ -4,56 +4,66 @@ import com.booking.dto.request.SlotRequest;
 import com.booking.dto.response.SlotResponse;
 import com.booking.entity.Service;
 import com.booking.entity.Slot;
+import com.booking.exception.BadRequestException;
 import com.booking.exception.ResourceNotFoundException;
 import com.booking.repository.ServiceRepository;
 import com.booking.repository.SlotRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.booking.security.CustomUserDetails;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class SlotService {
 
     private final SlotRepository slotRepository;
     private final ServiceRepository serviceRepository;
 
-    public SlotService(SlotRepository slotRepository,
-                       ServiceRepository serviceRepository) {
+    public SlotService(SlotRepository slotRepository, ServiceRepository serviceRepository) {
         this.slotRepository = slotRepository;
         this.serviceRepository = serviceRepository;
     }
 
-    @Transactional
-    public SlotResponse createSlot(SlotRequest request) {
-
+    public SlotResponse createSlot(SlotRequest request, CustomUserDetails currentUser) {
         Service service = serviceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + request.getServiceId()));
+
+        if (!service.getProvider().getId().equals(currentUser.getId())) {
+            throw new com.booking.exception.AccessDeniedException("You can only create slots for your own services");
+        }
+
+        if (request.getEndTime().isBefore(request.getStartTime()) ||
+                request.getEndTime().isEqual(request.getStartTime())) {
+            throw new BadRequestException("End time must be after start time");
+        }
 
         Slot slot = Slot.builder()
                 .service(service)
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
-                .isBooked(false)
+                .available(true)
                 .build();
 
-        return mapToResponse(slotRepository.save(slot));
+        Slot saved = slotRepository.save(slot);
+        return mapToResponse(saved);
     }
 
-    @Transactional(readOnly = true)
     public List<SlotResponse> getSlotsByService(Long serviceId) {
-
+        if (!serviceRepository.existsById(serviceId)) {
+            throw new ResourceNotFoundException("Service not found with id: " + serviceId);
+        }
         return slotRepository.findByServiceId(serviceId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public List<SlotResponse> getAvailableSlots(Long serviceId) {
-
-        return slotRepository.findByServiceIdAndIsBookedFalse(serviceId)
+    public List<SlotResponse> getAvailableSlotsByService(Long serviceId) {
+        if (!serviceRepository.existsById(serviceId)) {
+            throw new ResourceNotFoundException("Service not found with id: " + serviceId);
+        }
+        return slotRepository.findByServiceIdAndAvailableTrue(serviceId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -62,14 +72,11 @@ public class SlotService {
     private SlotResponse mapToResponse(Slot slot) {
         return SlotResponse.builder()
                 .id(slot.getId())
-                .startTime(slot.getStartTime())
-                .endTime(slot.getEndTime())
-                .isBooked(slot.getIsBooked())
-
-                // 🔥 ACCESS INSIDE SESSION
                 .serviceId(slot.getService().getId())
                 .serviceName(slot.getService().getName())
-
+                .startTime(slot.getStartTime())
+                .endTime(slot.getEndTime())
+                .available(slot.getAvailable())
                 .build();
     }
 }
