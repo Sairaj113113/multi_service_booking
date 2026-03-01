@@ -25,6 +25,9 @@ public class Service {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(length = 500)
+    private String imageUrl;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
@@ -32,7 +35,7 @@ public class Service {
     private Integer durationMinutes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "provider_id")
-@JsonIgnore
-private User provider;
+    @JoinColumn(name = "provider_id")
+    @JsonIgnore
+    private User provider;
 }

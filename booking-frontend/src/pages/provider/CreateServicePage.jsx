@@ -9,6 +9,7 @@ export default function CreateServicePage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
+    imageUrl: "",
     price: "",
     durationMinutes: ""
   })
@@ -42,9 +43,9 @@ export default function CreateServicePage() {
   return (
     <PageLayout title="Create Service">
 
-      <div className="max-w-2xl">
+      <div className="mx-auto w-full max-w-3xl">
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="card-glass space-y-6 p-6">
 
           {/* NAME */}
           <div>
@@ -68,38 +69,54 @@ export default function CreateServicePage() {
               onChange={handleChange}
               className="input mt-2"
               placeholder="Professional haircut"
+              rows={4}
             />
           </div>
 
-          {/* PRICE */}
+          {/* IMAGE */}
           <div>
-            <label className="text-sm text-obsidian-300">Price</label>
+            <label className="text-sm text-obsidian-300">Service Image URL</label>
             <input
-              type="number"
-              name="price"
-              value={form.price}
+              type="url"
+              name="imageUrl"
+              value={form.imageUrl}
               onChange={handleChange}
               className="input mt-2"
-              placeholder="25"
-              required
+              placeholder="https://images.example.com/service.jpg"
             />
           </div>
 
-          {/* DURATION */}
-          <div>
-            <label className="text-sm text-obsidian-300">Duration (minutes)</label>
-            <input
-              type="number"
-              name="durationMinutes"
-              value={form.durationMinutes}
-              onChange={handleChange}
-              className="input mt-2"
-              placeholder="30"  
-              required
-            />
+          <div className="grid gap-5 md:grid-cols-2">
+            {/* PRICE */}
+            <div>
+              <label className="text-sm text-obsidian-300">Price</label>
+              <input
+                type="number"
+                name="price"
+                value={form.price}
+                onChange={handleChange}
+                className="input mt-2"
+                placeholder="25"
+                required
+              />
+            </div>
+
+            {/* DURATION */}
+            <div>
+              <label className="text-sm text-obsidian-300">Duration (minutes)</label>
+              <input
+                type="number"
+                name="durationMinutes"
+                value={form.durationMinutes}
+                onChange={handleChange}
+                className="input mt-2"
+                placeholder="30"
+                required
+              />
+            </div>
           </div>
 
-            <button
+          <button
             className="btn-gold w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={loading}
             type="submit"

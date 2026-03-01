@@ -51,6 +51,13 @@
     background: rgba(212,175,55,0.3);
     color: #F5E17A;
   }
+
+  a:focus,
+  a:focus-visible,
+  button:focus,
+  button:focus-visible {
+    outline: none;
+  }
 }
 
 @layer components {

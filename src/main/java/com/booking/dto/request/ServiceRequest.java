@@ -12,6 +12,9 @@ public class ServiceRequest {
 
     private String description;
 
+    @Size(max = 500, message = "Image URL is too long")
+    private String imageUrl;
+
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be positive")
     private BigDecimal price;

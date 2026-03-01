@@ -14,6 +14,7 @@ public class ServiceResponse {
     private Long id;
     private String name;
     private String description;
+    private String imageUrl;
     private BigDecimal price;
     private Integer durationMinutes;
     private Long providerId;

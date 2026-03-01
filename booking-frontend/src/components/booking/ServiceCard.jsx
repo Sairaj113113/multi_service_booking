@@ -37,13 +37,28 @@ export const ServiceCard = ({ service, index = 0 }) => {
     >
       {/* Card header */}
       <div className="relative h-44 bg-gradient-to-br from-obsidian-800/80 to-obsidian-900/80 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold-500/5 to-transparent" />
-        {/* Decorative rings */}
-        <div className="absolute w-32 h-32 rounded-full border border-gold-500/10 animate-spin-slow" />
-        <div className="absolute w-20 h-20 rounded-full border border-gold-500/15 animate-spin-slow" style={{ animationDirection: 'reverse' }} />
-        <span className="text-5xl relative z-10 group-hover:scale-110 transition-transform duration-300">
-          {getIcon(service.name)}
-        </span>
+        {service.imageUrl ? (
+          <img
+            src={service.imageUrl}
+            alt={service.name}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-gold-500/5 to-transparent" />
+            {/* Decorative rings */}
+            <div className="absolute w-32 h-32 rounded-full border border-gold-500/10 animate-spin-slow" />
+            <div
+              className="absolute w-20 h-20 rounded-full border border-gold-500/15 animate-spin-slow"
+              style={{ animationDirection: 'reverse' }}
+            />
+            <span className="text-5xl relative z-10 group-hover:scale-110 transition-transform duration-300">
+              {getIcon(service.name)}
+            </span>
+          </>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-obsidian-950/20 to-transparent" />
         {/* Gold glare on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-gold-500/0 to-gold-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
