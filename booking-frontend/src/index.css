@@ -138,3 +138,21 @@
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+.input {
+  @apply w-full
+  bg-obsidian-900
+  border border-white/10
+  rounded-xl
+  px-4 py-3
+  text-white
+  placeholder:text-obsidian-500
+  focus:outline-none
+  focus:border-gold-400
+  focus:ring-1
+  focus:ring-gold-400;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}     

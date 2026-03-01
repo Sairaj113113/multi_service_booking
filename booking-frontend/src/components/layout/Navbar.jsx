@@ -19,7 +19,9 @@ const NavItem = ({ to, children }) => (
 export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { isAuthenticated, user, logout, isUser } = useAuth()
+
+  const { isAuthenticated, user, logout, isUser, isProvider, isAdmin } = useAuth()
+
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
           <div className="w-8 h-8 rounded-lg bg-gold-gradient flex items-center justify-center shadow-gold">
@@ -59,8 +62,25 @@ export const Navbar = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8">
+
           <NavItem to="/services">Services</NavItem>
-          {isAuthenticated && isUser && <NavItem to="/my-bookings">My Bookings</NavItem>}
+
+          {isAuthenticated && isUser && (
+            <NavItem to="/my-bookings">My Bookings</NavItem>
+          )}
+
+          {isAuthenticated && isProvider && (
+            <>
+              <NavItem to="/provider">Dashboard</NavItem>
+              <NavItem to="/provider/services">My Services</NavItem>
+              <NavItem to="/provider/create-service">Add Service</NavItem>
+            </>
+          )}
+
+          {isAuthenticated && isAdmin && (
+            <NavItem to="/admin/users">Admin</NavItem>
+          )}
+
         </nav>
 
         {/* Desktop auth */}
@@ -70,6 +90,7 @@ export const Navbar = () => {
               <span className="text-sm text-obsidian-300">
                 <span className="text-gold-400">{user?.name}</span>
               </span>
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -81,9 +102,14 @@ export const Navbar = () => {
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Link to="/login" className="btn-ghost text-sm px-5 py-2">Sign In</Link>
+              <Link to="/login" className="btn-ghost text-sm px-5 py-2">
+                Sign In
+              </Link>
+
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link to="/register" className="btn-gold text-sm px-5 py-2">Get Started</Link>
+                <Link to="/register" className="btn-gold text-sm px-5 py-2">
+                  Get Started
+                </Link>
               </motion.div>
             </div>
           )}
@@ -110,20 +136,57 @@ export const Navbar = () => {
             className="md:hidden bg-obsidian-950/95 backdrop-blur-xl border-b border-white/5"
           >
             <div className="px-6 py-4 space-y-4">
-              <Link to="/services" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 transition-colors py-2">Services</Link>
+
+              <Link to="/services" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                Services
+              </Link>
+
               {isAuthenticated && isUser && (
-                <Link to="/my-bookings" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 transition-colors py-2">My Bookings</Link>
+                <Link to="/my-bookings" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                  My Bookings
+                </Link>
               )}
+
+              {isAuthenticated && isProvider && (
+                <>
+                  <Link to="/provider" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                    Dashboard
+                  </Link>
+
+                  <Link to="/provider/services" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                    My Services
+                  </Link>
+
+                  <Link to="/provider/create-service" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                    Add Service
+                  </Link>
+                </>
+              )}
+
+              {isAuthenticated && isAdmin && (
+                <Link to="/admin/users" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                  Admin
+                </Link>
+              )}
+
               <div className="pt-2 border-t border-white/5 space-y-3">
                 {isAuthenticated ? (
-                  <button onClick={handleLogout} className="w-full btn-ghost text-sm py-2">Sign Out</button>
+                  <button onClick={handleLogout} className="w-full btn-ghost text-sm py-2">
+                    Sign Out
+                  </button>
                 ) : (
                   <>
-                    <Link to="/login" onClick={() => setMobileOpen(false)} className="block w-full btn-ghost text-sm text-center py-2">Sign In</Link>
-                    <Link to="/register" onClick={() => setMobileOpen(false)} className="block w-full btn-gold text-sm text-center py-2">Get Started</Link>
+                    <Link to="/login" onClick={() => setMobileOpen(false)} className="block w-full btn-ghost text-sm text-center py-2">
+                      Sign In
+                    </Link>
+
+                    <Link to="/register" onClick={() => setMobileOpen(false)} className="block w-full btn-gold text-sm text-center py-2">
+                      Get Started
+                    </Link>
                   </>
                 )}
               </div>
+
             </div>
           </motion.div>
         )}

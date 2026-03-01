@@ -41,6 +41,20 @@ public class ServiceService {
         return mapToResponse(serviceRepository.save(service));
     }
 
+@Transactional
+public void deleteService(Long serviceId, CustomUserDetails currentUser) {
+
+    boolean isOwner = serviceRepository
+            .existsByIdAndProviderId(serviceId, currentUser.getId());
+
+    if (!isOwner) {
+        throw new com.booking.exception.AccessDeniedException(
+                "You can only delete your own services");
+    }
+
+    serviceRepository.deleteById(serviceId);
+}
+
     @Transactional(readOnly = true)
     public List<ServiceResponse> getAllServices() {
         return serviceRepository.findAll()

@@ -1,0 +1,39 @@
+import { PageLayout } from "../../components/layout/PageLayout"
+import { useEffect, useState } from "react"
+import api from "../../api/api"
+import { Link } from "react-router-dom"
+
+export default function MyServicesPage() {
+
+  const [services, setServices] = useState([])
+
+  useEffect(() => {
+    api.get("/api/services").then(res => setServices(res.data))
+  }, [])
+
+  return (
+    <PageLayout title="My Services">
+
+      <div className="grid md:grid-cols-3 gap-6">
+
+        {services.map(s => (
+          <div key={s.id} className="card-glass p-5">
+
+            <h3 className="gold-text text-lg">{s.name}</h3>
+            <p className="text-obsidian-400 text-sm">{s.description}</p>
+
+            <Link
+              to={`/provider/services/${s.id}/slots`}
+              className="btn-ghost mt-4 block text-center"
+            >
+              Manage Slots
+            </Link>
+
+          </div>
+        ))}
+
+      </div>
+
+    </PageLayout>
+  )
+}
