@@ -2,6 +2,7 @@ com\booking\service\BookingService.class
 com\booking\dto\request\ServiceRequest.class
 com\booking\dto\response\ServiceResponse$ServiceResponseBuilder.class
 com\booking\exception\BadRequestException.class
+com\booking\entity\Booking$PaymentStatus.class
 com\booking\exception\AccessDeniedException.class
 com\booking\controller\SlotController.class
 com\booking\repository\UserRepository.class
@@ -9,10 +10,14 @@ com\booking\dto\response\AuthResponse.class
 com\booking\controller\AdminController.class
 com\booking\entity\Slot$SlotBuilder.class
 com\booking\entity\Service.class
+com\booking\service\UserService.class
 com\booking\dto\response\AuthResponse$AuthResponseBuilder.class
 com\booking\dto\response\ErrorResponse.class
 com\booking\dto\request\LoginRequest.class
+com\booking\controller\UserController.class
 com\booking\service\SlotService.class
+com\booking\dto\response\UserProfileResponse$UserProfileResponseBuilder.class
+com\booking\dto\request\PaymentRequest.class
 com\booking\dto\request\BookingRequest.class
 com\booking\security\CustomUserDetails.class
 com\booking\controller\AuthController.class
@@ -20,8 +25,11 @@ com\booking\dto\response\BookingResponse$BookingResponseBuilder.class
 com\booking\entity\Slot.class
 com\booking\exception\ResourceNotFoundException.class
 com\booking\entity\Booking$BookingBuilder.class
+com\booking\dto\response\UserProfileResponse.class
 com\booking\entity\User.class
+com\booking\config\CorsConfig.class
 com\booking\security\JwtAuthenticationFilter.class
+com\booking\entity\Booking$PaymentMethod.class
 com\booking\dto\request\RegisterRequest.class
 com\booking\dto\response\SlotResponse.class
 com\booking\security\CustomUserDetailsService.class
@@ -37,6 +45,7 @@ com\booking\entity\User$Role.class
 com\booking\service\AdminService.class
 com\booking\dto\response\BookingResponse.class
 com\booking\dto\response\ServiceResponse.class
+com\booking\dto\request\UpdateProfileRequest.class
 com\booking\dto\response\ErrorResponse$ErrorResponseBuilder.class
 com\booking\entity\Booking$BookingStatus.class
 com\booking\dto\response\UserResponse.class
