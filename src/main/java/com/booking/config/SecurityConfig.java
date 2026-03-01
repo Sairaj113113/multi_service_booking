@@ -39,41 +39,53 @@ public class SecurityConfig {
     @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    http.csrf(csrf -> csrf.disable());
+    http
+            .cors(cors -> {}) // ✅ ENABLE CORS (THIS WAS MISSING)
 
-    http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+            .csrf(csrf -> csrf.disable())
 
-    http.sessionManagement(session ->
-            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .headers(headers ->
+                    headers.frameOptions(frame -> frame.disable())
+            )
 
-        http.authorizeHttpRequests(auth -> auth
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
 
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
-.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+            .authorizeHttpRequests(auth -> auth
 
-                .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/slots/**").permitAll()
+                    // H2
+                    .requestMatchers("/h2-console/**").permitAll()
 
-                .requestMatchers(HttpMethod.POST, "/api/services/**").hasRole("PROVIDER")
-                .requestMatchers(HttpMethod.POST, "/api/slots/**").hasRole("PROVIDER")
+                    // AUTH
+                    .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 
-                .requestMatchers(HttpMethod.POST, "/api/bookings/**").hasRole("USER")
-                .requestMatchers(HttpMethod.PUT, "/api/bookings/**").hasRole("USER")
-                .requestMatchers(HttpMethod.GET, "/api/bookings/my").hasRole("USER")
+                    // PUBLIC GET
+                    .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/slots/**").permitAll()
 
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    // PROVIDER
+                    .requestMatchers(HttpMethod.POST, "/api/services/**").hasRole("PROVIDER")
+                    .requestMatchers(HttpMethod.POST, "/api/slots/**").hasRole("PROVIDER")
 
-                .anyRequest().permitAll()
-        );
+                    // USER
+                    .requestMatchers(HttpMethod.POST, "/api/bookings/**").hasRole("USER")
+                    .requestMatchers(HttpMethod.PUT, "/api/bookings/**").hasRole("USER")
+                    .requestMatchers(HttpMethod.GET, "/api/bookings/my").hasRole("USER")
 
-        http.authenticationProvider(authenticationProvider());
+                    // ADMIN
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                    .anyRequest().permitAll()
+            )
 
-        return http.build();
-    }
+            .authenticationProvider(authenticationProvider())
 
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
