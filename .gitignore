@@ -1,1 +1,11 @@
+# local env
 .env.local
+
+# H2 database
+data/
+
+# Maven build
+target/
+
+# IDE
+.idea/
