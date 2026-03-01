@@ -1,6 +1,7 @@
 package com.booking.controller;
 
 import com.booking.dto.request.BookingRequest;
+import com.booking.dto.request.PaymentRequest;
 import com.booking.dto.response.BookingResponse;
 import com.booking.security.CustomUserDetails;
 import com.booking.service.BookingService;
@@ -38,6 +39,21 @@ public class BookingController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         BookingResponse response = bookingService.cancelBooking(id, currentUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/pay")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public ResponseEntity<BookingResponse> confirmPayment(
+            @PathVariable Long id,
+            @Valid @RequestBody PaymentRequest request,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+        BookingResponse response = bookingService.confirmPayment(
+                id,
+                request.getPaymentMethod(),
+                request.getPaymentReference(),
+                currentUser
+        );
         return ResponseEntity.ok(response);
     }
 

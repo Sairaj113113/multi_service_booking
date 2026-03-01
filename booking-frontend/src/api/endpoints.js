@@ -25,6 +25,7 @@ export const bookingsAPI = {
   book: (data) => api.post('/api/bookings', data),
   cancel: (id) => api.put(`/api/bookings/${id}/cancel`),
   getMyBookings: () => api.get('/api/bookings/my'),
+  pay: (id, data) => api.put(`/api/bookings/${id}/pay`, data),
 }
 
 // Admin

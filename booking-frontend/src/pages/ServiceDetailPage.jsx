@@ -64,7 +64,13 @@ const BookingSuccessModal = ({ booking, onClose }) => (
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-obsidian-400">Status</span>
-            <span className="text-emerald-400">Confirmed</span>
+            <span className="text-emerald-400">
+              {booking?.paymentStatus === 'PAID' ? 'Paid' : 'Pending Payment'}
+            </span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-obsidian-400">Method</span>
+            <span className="text-white">{booking?.paymentMethod}</span>
           </div>
         </div>
 
@@ -100,6 +106,7 @@ export const ServiceDetailPage = () => {
   const [loadingSlots, setLoadingSlots] = useState(true)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [booking, setBooking] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState('CARD')
   const [successBooking, setSuccessBooking] = useState(null)
 
   useEffect(() => {
@@ -121,8 +128,18 @@ export const ServiceDetailPage = () => {
 
     setBooking(true)
     try {
-      const { data } = await bookingsAPI.book({ slotId: selectedSlot.id })
-      setSuccessBooking(data)
+      const { data: created } = await bookingsAPI.book({
+        slotId: selectedSlot.id,
+        paymentMethod,
+      })
+      if (paymentMethod !== 'CASH') {
+        const { data: paid } = await bookingsAPI.pay(created.id, {
+          paymentMethod,
+        })
+        setSuccessBooking(paid)
+      } else {
+        setSuccessBooking(created)
+      }
       setSlots(prev => prev.map(s => s.id === selectedSlot.id ? { ...s, available: false } : s))
       setSelectedSlot(null)
     } catch (err) {
@@ -292,6 +309,31 @@ export const ServiceDetailPage = () => {
                   )}
                 </AnimatePresence>
 
+                <div className="mb-5">
+                  <p className="text-obsidian-400 text-xs mb-2">Payment Method</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['CARD', 'UPI', 'CASH'].map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setPaymentMethod(m)}
+                        className={`rounded-xl px-3 py-2 text-xs border transition-colors ${
+                          paymentMethod === m
+                            ? 'border-gold-400/70 bg-gold-500/10 text-gold-300'
+                            : 'border-white/10 text-obsidian-300 hover:text-white'
+                        }`}
+                      >
+                        {m === 'CARD' ? 'Card' : m === 'UPI' ? 'UPI' : 'Cash'}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-obsidian-500 text-xs mt-2">
+                    {paymentMethod === 'CASH'
+                      ? 'Pay at the venue after your appointment.'
+                      : 'Secure payment will be processed now.'}
+                  </p>
+                </div>
+
                 <motion.button
                   whileHover={{ scale: selectedSlot && !booking ? 1.02 : 1 }}
                   whileTap={{ scale: selectedSlot && !booking ? 0.98 : 1 }}
@@ -302,12 +344,12 @@ export const ServiceDetailPage = () => {
                   {booking ? (
                     <>
                       <div className="w-4 h-4 rounded-full border-2 border-obsidian-800/40 border-t-obsidian-950 animate-spin" />
-                      Booking...
+                      Processing...
                     </>
                   ) : !isAuthenticated ? (
                     'Sign In to Book'
                   ) : (
-                    'Confirm Booking'
+                    paymentMethod === 'CASH' ? 'Confirm Booking' : 'Pay & Confirm'
                   )}
                 </motion.button>
 

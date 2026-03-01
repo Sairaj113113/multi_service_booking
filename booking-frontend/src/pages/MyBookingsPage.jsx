@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 
 const tabs = [
   { key: 'all', label: 'All' },
+  { key: 'PENDING_PAYMENT', label: 'Pending Payment' },
   { key: 'BOOKED', label: 'Active' },
   { key: 'CANCELLED', label: 'Cancelled' },
 ]
@@ -35,7 +36,7 @@ export const MyBookingsPage = () => {
   }
 
   const filtered = activeTab === 'all' ? bookings : bookings.filter(b => b.status === activeTab)
-  const activeCount = bookings.filter(b => b.status === 'BOOKED').length
+  const activeCount = bookings.filter(b => b.status === 'BOOKED' || b.status === 'PENDING_PAYMENT').length
 
   return (
     <PageLayout>

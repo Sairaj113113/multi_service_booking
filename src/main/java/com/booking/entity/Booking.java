@@ -27,9 +27,38 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private BookingStatus status = BookingStatus.BOOKED;
+    private BookingStatus status = BookingStatus.PENDING_PAYMENT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod paymentMethod;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private java.math.BigDecimal amount;
+
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private String currency = "USD";
+
+    @Column(length = 120)
+    private String paymentReference;
+
+    private java.time.LocalDateTime paidAt;
 
     public enum BookingStatus {
-        BOOKED, CANCELLED
+        PENDING_PAYMENT, BOOKED, CANCELLED
+    }
+
+    public enum PaymentStatus {
+        PENDING, PAID, FAILED, REFUNDED
+    }
+
+    public enum PaymentMethod {
+        CARD, UPI, CASH
     }
 }

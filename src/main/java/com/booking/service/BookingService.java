@@ -55,10 +55,20 @@ public class BookingService {
         slot.setAvailable(false);
         slotRepository.save(slot);
 
+        Booking.PaymentMethod method = resolvePaymentMethod(request.getPaymentMethod());
+
         Booking booking = Booking.builder()
                 .user(user)
                 .slot(slot)
-                .status(Booking.BookingStatus.BOOKED)
+                .status(method == Booking.PaymentMethod.CASH
+                        ? Booking.BookingStatus.BOOKED
+                        : Booking.BookingStatus.PENDING_PAYMENT)
+                .paymentStatus(method == Booking.PaymentMethod.CASH
+                        ? Booking.PaymentStatus.PENDING
+                        : Booking.PaymentStatus.PENDING)
+                .paymentMethod(method)
+                .amount(slot.getService().getPrice())
+                .currency("USD")
                 .build();
 
         Booking saved = bookingRepository.save(booking);
@@ -84,6 +94,9 @@ public class BookingService {
         }
 
         booking.setStatus(Booking.BookingStatus.CANCELLED);
+        if (booking.getPaymentStatus() == Booking.PaymentStatus.PAID) {
+            booking.setPaymentStatus(Booking.PaymentStatus.REFUNDED);
+        }
 
         Slot slot = booking.getSlot();
         slot.setAvailable(true);
@@ -91,6 +104,39 @@ public class BookingService {
 
         Booking updated = bookingRepository.save(booking);
 
+        return mapToResponse(updated);
+    }
+
+    // ✅ CONFIRM PAYMENT
+    @Transactional
+    public BookingResponse confirmPayment(Long bookingId, String method, String reference, CustomUserDetails currentUser) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Booking not found with id: " + bookingId));
+
+        if (!booking.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You can only pay for your own bookings");
+        }
+
+        if (booking.getStatus() == Booking.BookingStatus.CANCELLED) {
+            throw new BadRequestException("Cannot pay for a cancelled booking");
+        }
+        if (booking.getPaymentStatus() == Booking.PaymentStatus.PAID) {
+            throw new BadRequestException("Payment already completed");
+        }
+
+        Booking.PaymentMethod paymentMethod = resolvePaymentMethod(method);
+
+        booking.setPaymentMethod(paymentMethod);
+        booking.setPaymentStatus(Booking.PaymentStatus.PAID);
+        booking.setPaymentReference(reference == null || reference.isBlank()
+                ? generateReference(bookingId)
+                : reference);
+        booking.setPaidAt(java.time.LocalDateTime.now());
+        booking.setStatus(Booking.BookingStatus.BOOKED);
+
+        Booking updated = bookingRepository.save(booking);
         return mapToResponse(updated);
     }
 
@@ -116,6 +162,27 @@ public class BookingService {
                 .slotEndTime(booking.getSlot().getEndTime())
                 .serviceName(booking.getSlot().getService().getName())
                 .status(booking.getStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .paymentMethod(booking.getPaymentMethod().name())
+                .amount(booking.getAmount())
+                .currency(booking.getCurrency())
+                .paymentReference(booking.getPaymentReference())
+                .paidAt(booking.getPaidAt())
                 .build();
+    }
+
+    private Booking.PaymentMethod resolvePaymentMethod(String method) {
+        if (method == null || method.isBlank()) {
+            return Booking.PaymentMethod.CASH;
+        }
+        try {
+            return Booking.PaymentMethod.valueOf(method.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Invalid payment method: " + method);
+        }
+    }
+
+    private String generateReference(Long bookingId) {
+        return "PAY-" + bookingId + "-" + System.currentTimeMillis();
     }
 }

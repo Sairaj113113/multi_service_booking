@@ -15,6 +15,7 @@ const formatDateTime = (dt) => {
 export const BookingCard = ({ booking, onCancelled }) => {
   const [cancelling, setCancelling] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [paying, setPaying] = useState(false)
   const start = formatDateTime(booking.slotStartTime)
 
   const handleCancel = async () => {
@@ -28,6 +29,19 @@ export const BookingCard = ({ booking, onCancelled }) => {
     } finally {
       setCancelling(false)
       setShowConfirm(false)
+    }
+  }
+
+  const handlePayNow = async () => {
+    setPaying(true)
+    try {
+      await bookingsAPI.pay(booking.id, { paymentMethod: booking.paymentMethod })
+      toast.success('Payment completed')
+      window.location.reload()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Payment failed')
+    } finally {
+      setPaying(false)
     }
   }
 
@@ -52,8 +66,34 @@ export const BookingCard = ({ booking, onCancelled }) => {
             <p className="text-obsidian-300 text-sm mt-1">{start.date}</p>
             <p className="text-gold-400 text-sm font-mono mt-0.5">{start.time}</p>
             <p className="text-obsidian-500 text-xs mt-1 font-mono">Booking #{booking.id}</p>
+            <div className="flex items-center gap-3 mt-2 text-xs text-obsidian-400">
+              <span>{booking.paymentMethod}</span>
+              <span>•</span>
+              <span>{booking.paymentStatus}</span>
+              {booking.amount && (
+                <>
+                  <span>•</span>
+                  <span className="text-gold-300 font-mono">
+                    {booking.currency || 'USD'} {booking.amount}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
+
+        {booking.status === 'PENDING_PAYMENT' && booking.paymentMethod !== 'CASH' && (
+          <div className="flex-shrink-0">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handlePayNow}
+              disabled={paying}
+              className="px-4 py-2 rounded-xl text-xs border border-gold-500/40 text-gold-300 hover:bg-gold-500/10 transition-all disabled:opacity-50"
+            >
+              {paying ? 'Processing...' : 'Pay Now'}
+            </motion.button>
+          </div>
+        )}
 
         {booking.status === 'BOOKED' && (
           <div className="flex-shrink-0">
