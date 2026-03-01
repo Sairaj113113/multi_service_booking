@@ -2,6 +2,7 @@ package com.booking.dto.request;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 public class SlotRequest {
 
     @NotNull(message = "Service ID is required")
+    @Positive(message = "Service ID must be positive")
     private Long serviceId;
 
     @NotNull(message = "Start time is required")

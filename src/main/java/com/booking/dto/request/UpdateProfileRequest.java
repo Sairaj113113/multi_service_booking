@@ -8,7 +8,7 @@ import lombok.Data;
 public class UpdateProfileRequest {
 
     @NotBlank(message = "Name is required")
-    @Size(max = 120, message = "Name is too long")
+    @Size(min = 2, max = 120, message = "Name must be between 2 and 120 characters")
     private String name;
 
     @Size(max = 255, message = "Avatar URL is too long")

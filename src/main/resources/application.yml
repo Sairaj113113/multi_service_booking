@@ -25,5 +25,5 @@ logging:
 
 app:
   jwt:
-    secret: mySuperSecretKeymySuperSecretKeymySuperSecretKey
-    expiration-ms: 86400000
+    secret: ${APP_JWT_SECRET:mySuperSecretKeymySuperSecretKeymySuperSecretKey}
+    expiration-ms: 7200000

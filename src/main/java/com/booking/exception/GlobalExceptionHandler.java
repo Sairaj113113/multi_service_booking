@@ -54,16 +54,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-public ResponseEntity<Map<String, Object>> handleAll(Exception ex) {
-
-    ex.printStackTrace();   // 👈 THIS PRINTS ERROR IN CONSOLE
-
-    Map<String, Object> body = new HashMap<>();
-    body.put("message", ex.getMessage());   // 👈 REAL ERROR IN POSTMAN
-    body.put("error", ex.getClass().getName());
-
-    return ResponseEntity.status(500).body(body);
-}
+    public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
+        // Log the full error for debugging
+        ex.printStackTrace();
+        
+        // Return a generic error message to avoid exposing internal details
+        Map<String, String> errors = Map.of("error", "An unexpected error occurred");
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", errors);
+    }
 
     private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message,
                                                          Map<String, String> errors) {
