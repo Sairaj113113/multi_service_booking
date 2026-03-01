@@ -49,4 +49,4 @@ const ManageSlotsPage = () => {
   )
 }
 
-export default ManageSlotsPage
+export default ManageSlotsPage      

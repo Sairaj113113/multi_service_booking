@@ -5,6 +5,8 @@ import { Link } from "react-router-dom"
 
 export default function MyServicesPage() {
 
+
+
   const [services, setServices] = useState([])
 
   useEffect(() => {
@@ -37,3 +39,18 @@ export default function MyServicesPage() {
     </PageLayout>
   )
 }
+
+const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Delete this service?");
+    if (!confirmDelete) return;
+  
+    try {
+      await api.delete(`/api/services/${id}`);
+      fetchServices(); // reload list
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete service");
+    }
+  };        
+
+  
