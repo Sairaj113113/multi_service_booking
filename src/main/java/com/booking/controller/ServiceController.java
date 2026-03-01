@@ -41,14 +41,14 @@ public class ServiceController {
     public ResponseEntity<ServiceResponse> getServiceById(@PathVariable Long id) {
         return ResponseEntity.ok(serviceService.getServiceById(id));
     }
-}
+    
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_PROVIDER')")
+    public ResponseEntity<Void> deleteService(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
 
-@DeleteMapping("/{id}")
-@PreAuthorize("hasAuthority('ROLE_PROVIDER')")
-public ResponseEntity<Void> deleteService(
-        @PathVariable Long id,
-        @AuthenticationPrincipal CustomUserDetails currentUser) {
-
-    serviceService.deleteService(id, currentUser);
-    return ResponseEntity.noContent().build();
+        serviceService.deleteService(id, currentUser);
+        return ResponseEntity.noContent().build();
+    }
 }
