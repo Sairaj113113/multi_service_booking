@@ -87,9 +87,9 @@ export const Navbar = () => {
         <div className="hidden md:flex items-center gap-4">
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <span className="text-sm text-obsidian-300">
+              <Link to="/profile" className="text-sm text-obsidian-300 hover:text-white transition">
                 <span className="text-gold-400">{user?.name}</span>
-              </span>
+              </Link>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}

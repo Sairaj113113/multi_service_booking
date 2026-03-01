@@ -31,3 +31,9 @@ export const bookingsAPI = {
 export const adminAPI = {
   getAllUsers: () => api.get('/api/admin/users'),
 }
+
+// Users
+export const usersAPI = {
+  getMe: () => api.get('/api/users/me'),
+  updateMe: (data) => api.put('/api/users/me', data),
+}

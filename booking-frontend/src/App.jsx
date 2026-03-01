@@ -10,6 +10,7 @@ import { RegisterPage } from "./pages/RegisterPage"
 import { ServicesPage } from "./pages/ServicesPage"
 import { ServiceDetailPage } from "./pages/ServiceDetailPage"
 import { NotFoundPage } from "./pages/NotFoundPage"
+import { ProfilePage } from "./pages/ProfilePage"
 
 // 👤 USER
 import { MyBookingsPage } from "./pages/MyBookingsPage"
@@ -30,6 +31,14 @@ const App = () => (
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/services" element={<ServicesPage />} />
       <Route path="/services/:id" element={<ServiceDetailPage />} />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_USER", "ROLE_PROVIDER", "ROLE_ADMIN"]}>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 👤 USER ROUTES */}
       <Route
