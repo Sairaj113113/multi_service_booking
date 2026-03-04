@@ -1,5 +1,5 @@
 import React from "react"
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import { ProtectedRoute } from "./components/layout/ProtectedRoute"
 
@@ -14,6 +14,13 @@ import { ProfilePage } from "./pages/ProfilePage"
 
 // 👤 USER
 import { MyBookingsPage } from "./pages/MyBookingsPage"
+
+// 👨‍💼 ADMIN PAGES
+import { AdminLayout } from "./pages/admin/AdminLayout"
+import { AdminDashboard } from "./pages/admin/AdminDashboard"
+import { AdminUsers } from "./pages/admin/AdminUsers"
+import { AdminBookings } from "./pages/admin/AdminBookings"
+import { AdminProviders } from "./pages/admin/AdminProviders"
 
 // 🧑‍💼 PROVIDER PAGES
 import ProviderDashboard from "./pages/provider/ProviderDashboard"
@@ -87,6 +94,22 @@ const App = () => (
           </ProtectedRoute>
         }
       />
+
+      {/* 👨‍💼 ADMIN ROUTES - Nested with Layout */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="bookings" element={<AdminBookings />} />
+        <Route path="providers" element={<AdminProviders />} />
+      </Route>
 
       {/* ❌ 404 */}
       <Route path="*" element={<NotFoundPage />} />

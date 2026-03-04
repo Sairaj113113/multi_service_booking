@@ -20,7 +20,7 @@ export const Badge = ({ label, variant = 'gold', className = '' }) => (
 export const StatusBadge = ({ status }) => {
   const map = {
     PENDING_PAYMENT: { label: 'Pending Payment', variant: 'gold' },
-    BOOKED: { label: 'Booked', variant: 'green' },
+    CONFIRMED: { label: 'Confirmed', variant: 'green' },
     CANCELLED: { label: 'Cancelled', variant: 'red' },
     AVAILABLE: { label: 'Available', variant: 'gold' },
     UNAVAILABLE: { label: 'Unavailable', variant: 'gray' },

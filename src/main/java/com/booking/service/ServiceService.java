@@ -5,6 +5,7 @@ import com.booking.dto.response.ServiceResponse;
 import com.booking.entity.User;
 import com.booking.exception.ResourceNotFoundException;
 import com.booking.repository.ServiceRepository;
+import com.booking.repository.SlotRepository;
 import com.booking.repository.UserRepository;
 import com.booking.security.CustomUserDetails;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,12 @@ import java.util.stream.Collectors;
 public class ServiceService {
 
     private final ServiceRepository serviceRepository;
+    private final SlotRepository slotRepository;
     private final UserRepository userRepository;
 
-    public ServiceService(ServiceRepository serviceRepository, UserRepository userRepository) {
+    public ServiceService(ServiceRepository serviceRepository, SlotRepository slotRepository, UserRepository userRepository) {
         this.serviceRepository = serviceRepository;
+        this.slotRepository = slotRepository;
         this.userRepository = userRepository;
     }
 
@@ -52,6 +55,9 @@ public void deleteService(Long serviceId, CustomUserDetails currentUser) {
         throw new com.booking.exception.AccessDeniedException(
                 "You can only delete your own services");
     }
+
+    // Delete all slots associated with this service first
+    slotRepository.deleteByServiceId(serviceId);
 
     serviceRepository.deleteById(serviceId);
 }

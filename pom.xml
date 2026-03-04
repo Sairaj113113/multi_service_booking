@@ -84,6 +84,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- 💳 RAZORPAY -->
+        <dependency>
+            <groupId>com.razorpay</groupId>
+            <artifactId>razorpay-java</artifactId>
+            <version>1.4.6</version>
+        </dependency>
+
         <!-- 🧠 LOMBOK -->
         <dependency>
             <groupId>org.projectlombok</groupId>

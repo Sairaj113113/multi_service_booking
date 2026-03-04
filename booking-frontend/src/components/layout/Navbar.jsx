@@ -78,7 +78,7 @@ export const Navbar = () => {
           )}
 
           {isAuthenticated && isAdmin && (
-            <NavItem to="/admin/users">Admin</NavItem>
+            <NavItem to="/admin/dashboard">Admin</NavItem>
           )}
 
         </nav>
@@ -164,7 +164,7 @@ export const Navbar = () => {
               )}
 
               {isAuthenticated && isAdmin && (
-                <Link to="/admin/users" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                <Link to="/admin/dashboard" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
                   Admin
                 </Link>
               )}

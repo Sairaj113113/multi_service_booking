@@ -48,10 +48,21 @@ public class Booking {
     @Column(length = 120)
     private String paymentReference;
 
+    @Column(length = 100)
+    private String razorpayOrderId;
+
     private java.time.LocalDateTime paidAt;
 
+    @Column(nullable = false, updatable = false)
+    private java.time.LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = java.time.LocalDateTime.now();
+    }
+
     public enum BookingStatus {
-        PENDING_PAYMENT, BOOKED, CANCELLED
+        PENDING_PAYMENT, CONFIRMED, BOOKED, CANCELLED
     }
 
     public enum PaymentStatus {

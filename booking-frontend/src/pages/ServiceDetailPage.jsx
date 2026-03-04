@@ -7,7 +7,7 @@ import { SkeletonCard } from '../components/ui/SkeletonCard'
 import { EmptyState } from '../components/ui/EmptyState'
 import { SectionLabel, GoldDivider } from '../components/ui/GoldDivider'
 import { Badge } from '../components/ui/Badge'
-import { servicesAPI, slotsAPI, bookingsAPI } from '../api/endpoints'
+import { servicesAPI, slotsAPI, bookingsAPI, paymentsAPI } from '../api/endpoints'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -109,6 +109,85 @@ export const ServiceDetailPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('CARD')
   const [successBooking, setSuccessBooking] = useState(null)
 
+  // Load Razorpay script dynamically
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.async = true
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
+  // Open Razorpay checkout
+  const openRazorpayCheckout = async (orderData, bookingId) => {
+    const options = {
+      key: orderData.key,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: 'Booking System',
+      description: service.name,
+      order_id: orderData.orderId,
+      handler: async (response) => {
+        try {
+          // Verify payment
+          await paymentsAPI.verifyPayment({
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+          })
+          
+          toast.success('Payment successful!')
+          // Refresh booking state to show updated status
+          const { data: updatedBooking } = await bookingsAPI.getMyBookings()
+          const booking = updatedBooking.find(b => b.id === bookingId)
+          setSuccessBooking(booking)
+          
+          // Update slot availability
+          setSlots(prev => prev.map(s => s.id === selectedSlot.id ? { ...s, available: false } : s))
+          setSelectedSlot(null)
+        } catch (error) {
+          toast.error('Payment verification failed')
+          console.error('Payment verification error:', error)
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          toast.error('Payment cancelled')
+          setBooking(false)
+        },
+      },
+      prefill: {
+        name: 'User',
+        email: 'user@example.com',
+        contact: '9999999999',
+      },
+      theme: {
+        color: '#f59e0b',
+      },
+    }
+
+    const razorpay = new window.Razorpay(options)
+    razorpay.open()
+  }
+
+  // Check if user already has booking with this slot (PENDING or PENDING_PAYMENT)
+  const checkForExistingPendingPayment = async (slotId) => {
+    try {
+      const { data: myBookings } = await bookingsAPI.getMyBookings()
+      const existingPendingBooking = myBookings.find(booking => 
+        booking.slotId === slotId && 
+        (booking.status === 'PENDING' || booking.status === 'PENDING_PAYMENT')
+      )
+      return existingPendingBooking
+    } catch (error) {
+      console.error('Error checking existing bookings:', error)
+      return false
+    }
+  }
+
   useEffect(() => {
     servicesAPI.getById(id)
       .then(r => setService(r.data))
@@ -126,25 +205,52 @@ export const ServiceDetailPage = () => {
     if (!isUser) { toast.error('Only clients can book slots'); return }
     if (!selectedSlot) { toast.error('Please select a slot'); return }
 
+    // Check if user already has booking with this slot (PENDING or PENDING_PAYMENT)
+    const hasExistingPendingBooking = await checkForExistingPendingPayment(selectedSlot.id)
+    if (hasExistingPendingBooking) {
+      toast.error('Complete your pending payment for this slot before creating a new booking')
+      return
+    }
+
     setBooking(true)
     try {
+      // Step 1: Create booking using existing API
       const { data: created } = await bookingsAPI.book({
         slotId: selectedSlot.id,
         paymentMethod,
       })
-      if (paymentMethod !== 'CASH') {
-        const { data: paid } = await bookingsAPI.pay(created.id, {
-          paymentMethod,
-        })
-        setSuccessBooking(paid)
-      } else {
+
+      if (paymentMethod === 'CASH') {
+        // CASH: Create booking → CONFIRMED → Done
         setSuccessBooking(created)
+        setSlots(prev => prev.map(s => s.id === selectedSlot.id ? { ...s, available: false } : s))
+        setSelectedSlot(null)
+      } else {
+        // CARD/UPI: Create booking → PENDING_PAYMENT → Razorpay flow → CONFIRMED
+        try {
+          // Step 2: Create Razorpay order
+          const { data: orderData } = await paymentsAPI.createOrder(created.id)
+          
+          // Step 3: Load Razorpay script
+          const scriptLoaded = await loadRazorpayScript()
+          if (!scriptLoaded) {
+            // If createOrder fails, show error without confirming
+            toast.error('Failed to load payment gateway')
+            setBooking(false)
+            return
+          }
+          
+          // Step 4: Open Razorpay checkout (only after successful createOrder)
+          await openRazorpayCheckout(orderData, created.id)
+        } catch (error) {
+          // If createOrder fails, show error without confirming
+          toast.error('Payment initialization failed')
+          console.error('Payment error:', error)
+          setBooking(false)
+        }
       }
-      setSlots(prev => prev.map(s => s.id === selectedSlot.id ? { ...s, available: false } : s))
-      setSelectedSlot(null)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Booking failed')
-    } finally {
       setBooking(false)
     }
   }

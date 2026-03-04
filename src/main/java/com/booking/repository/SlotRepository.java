@@ -7,4 +7,5 @@ import java.util.List;
 public interface SlotRepository extends JpaRepository<Slot, Long> {
     List<Slot> findByServiceId(Long serviceId);
     List<Slot> findByServiceIdAndAvailableTrue(Long serviceId);
+    void deleteByServiceId(Long serviceId);
 }

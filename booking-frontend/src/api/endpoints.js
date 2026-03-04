@@ -28,9 +28,20 @@ export const bookingsAPI = {
   pay: (id, data) => api.put(`/api/bookings/${id}/pay`, data),
 }
 
+// Payments
+export const paymentsAPI = {
+  createOrder: (bookingId) => api.post(`/api/payments/create-order/${bookingId}`),
+  verifyPayment: (data) => api.post('/api/payments/verify', data),
+}
+
 // Admin
 export const adminAPI = {
+  getDashboardStats: () => api.get('/api/admin/dashboard'),
   getAllUsers: () => api.get('/api/admin/users'),
+  getAllBookings: () => api.get('/api/admin/bookings'),
+  cancelBooking: (id) => api.put(`/api/admin/bookings/${id}/cancel`),
+  getAllProviders: () => api.get('/api/admin/providers'),
+  promoteUser: (id) => api.put(`/api/admin/users/${id}/promote`),
 }
 
 // Users

@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom'
 const tabs = [
   { key: 'all', label: 'All' },
   { key: 'PENDING_PAYMENT', label: 'Pending Payment' },
-  { key: 'BOOKED', label: 'Active' },
+  { key: 'CONFIRMED', label: 'Active' },
   { key: 'CANCELLED', label: 'Cancelled' },
 ]
 
@@ -36,7 +36,7 @@ export const MyBookingsPage = () => {
   }
 
   const filtered = activeTab === 'all' ? bookings : bookings.filter(b => b.status === activeTab)
-  const activeCount = bookings.filter(b => b.status === 'BOOKED' || b.status === 'PENDING_PAYMENT').length
+  const activeCount = bookings.filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING_PAYMENT').length
 
   return (
     <PageLayout>
@@ -110,7 +110,7 @@ export const MyBookingsPage = () => {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={activeTab === 'CANCELLED' ? '🗑' : '📅'}
-            title={activeTab === 'all' ? 'No Bookings Yet' : activeTab === 'BOOKED' ? 'No Active Bookings' : 'No Cancelled Bookings'}
+            title={activeTab === 'all' ? 'No Bookings Yet' : activeTab === 'CONFIRMED' ? 'No Active Bookings' : 'No Cancelled Bookings'}
             description={activeTab === 'all' ? 'Start by exploring our services and booking your first appointment.' : 'Nothing here yet.'}
             action={activeTab !== 'CANCELLED' ? {
               label: 'Browse Services',

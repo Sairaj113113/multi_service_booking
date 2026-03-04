@@ -27,3 +27,8 @@ app:
   jwt:
     secret: ${APP_JWT_SECRET:mySuperSecretKeymySuperSecretKeymySuperSecretKey}
     expiration-ms: 7200000
+
+
+razorpay:
+  key-id: rzp_test_SMIi6h6UnXTvvr
+  key-secret: E7pmooRHrtI6n2Isi8nwJW11
