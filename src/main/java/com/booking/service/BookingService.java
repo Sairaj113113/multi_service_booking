@@ -23,13 +23,16 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final SlotRepository slotRepository;
     private final UserRepository userRepository;
+    private final AdminNotificationService notificationService;
 
     public BookingService(BookingRepository bookingRepository,
                           SlotRepository slotRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          AdminNotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.slotRepository = slotRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     // ✅ BOOK SLOT
@@ -72,6 +75,9 @@ public class BookingService {
                 .build();
 
         Booking saved = bookingRepository.save(booking);
+
+        // Create admin notification for new booking
+        notificationService.createNewBookingNotification(saved);
 
         return mapToResponse(saved);
     }

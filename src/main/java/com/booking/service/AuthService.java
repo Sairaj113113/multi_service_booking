@@ -21,15 +21,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final AdminNotificationService notificationService;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        JwtUtil jwtUtil,
-                       AuthenticationManager authenticationManager) {
+                       AuthenticationManager authenticationManager,
+                       AdminNotificationService notificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
+        this.notificationService = notificationService;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -45,6 +48,9 @@ public class AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        // Create admin notification for new user registration
+        notificationService.createUserRegistrationNotification(savedUser);
 
         CustomUserDetails userDetails = new CustomUserDetails(savedUser);
         String token = jwtUtil.generateToken(userDetails);

@@ -44,6 +44,37 @@ export const adminAPI = {
   promoteUser: (id) => api.put(`/api/admin/users/${id}/promote`),
 }
 
+// Admin Analytics
+export const adminAnalyticsAPI = {
+  getOverview: () => api.get('/api/admin/analytics/overview'),
+  getBookingsTrend: () => api.get('/api/admin/analytics/bookings-trend'),
+  getRevenueTrend: () => api.get('/api/admin/analytics/revenue-trend'),
+  getServiceDistribution: () => api.get('/api/admin/analytics/service-distribution'),
+  getProviderPerformance: () => api.get('/api/admin/analytics/provider-performance'),
+}
+
+// Admin Settings
+export const adminSettingsAPI = {
+  getSettings: () => api.get('/api/admin/settings'),
+  updateSettings: (data) => api.put('/api/admin/settings', data),
+}
+
+// Admin Notifications
+export const adminNotificationAPI = {
+  getNotifications: () => api.get('/api/admin/notifications'),
+  getUnreadCount: () => api.get('/api/admin/notifications/unread-count'),
+  markAsRead: (id) => api.put(`/api/admin/notifications/${id}/read`),
+  markAllAsRead: () => api.put('/api/admin/notifications/read-all'),
+}
+
+// Provider Bookings
+export const providerBookingAPI = {
+  getBookings: () => api.get('/api/provider/bookings'),
+  acceptBooking: (id) => api.put(`/api/provider/bookings/${id}/accept`),
+  completeBooking: (id) => api.put(`/api/provider/bookings/${id}/complete`),
+  cancelBooking: (id) => api.put(`/api/provider/bookings/${id}/cancel`),
+}
+
 // Users
 export const usersAPI = {
   getMe: () => api.get('/api/users/me'),

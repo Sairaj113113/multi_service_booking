@@ -26,13 +26,16 @@ public class AdminService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final ServiceRepository serviceRepository;
+    private final AdminNotificationService notificationService;
 
     public AdminService(UserRepository userRepository,
                        BookingRepository bookingRepository,
-                       ServiceRepository serviceRepository) {
+                       ServiceRepository serviceRepository,
+                       AdminNotificationService notificationService) {
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.serviceRepository = serviceRepository;
+        this.notificationService = notificationService;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -159,5 +162,8 @@ public class AdminService {
 
         user.setRole(User.Role.ROLE_PROVIDER);
         userRepository.save(user);
+
+        // Create admin notification for user promotion
+        notificationService.createUserPromotedNotification(user);
     }
 }

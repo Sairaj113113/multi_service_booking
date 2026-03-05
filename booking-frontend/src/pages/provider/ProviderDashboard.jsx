@@ -1,8 +1,54 @@
 import { PageLayout } from "../../components/layout/PageLayout"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
+import { providerBookingAPI } from "../../api/endpoints"
 
 export default function ProviderDashboard() {
+  const [recentBookings, setRecentBookings] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadRecentActivity()
+  }, [])
+
+  const loadRecentActivity = async () => {
+    try {
+      const { data } = await providerBookingAPI.getBookings()
+      // Get last 5 bookings sorted by date
+      const sorted = data.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate))
+      setRecentBookings(sorted.slice(0, 5))
+    } catch (error) {
+      console.error('Failed to load recent bookings:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getRelativeTime = (dateString) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now - date
+    const diffMin = Math.floor(diffMs / 60000)
+    const diffHour = Math.floor(diffMin / 60)
+    const diffDay = Math.floor(diffHour / 24)
+
+    if (diffMin < 60) return `${diffMin} min ago`
+    if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`
+    if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`
+    return date.toLocaleDateString()
+  }
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'CONFIRMED': 'bg-green-400',
+      'BOOKED': 'bg-blue-400',
+      'PENDING_PAYMENT': 'bg-yellow-400',
+      'CANCELLED': 'bg-red-400'
+    }
+    return colors[status] || 'bg-gray-400'
+  }
+
   const quickActions = [
     {
       to: "/provider/create-service",
@@ -177,28 +223,28 @@ export default function ProviderDashboard() {
           <div className="glass-card p-8">
             <h2 className="text-2xl font-display font-semibold text-white mb-6">Recent Activity</h2>
             <div className="space-y-4">
-              {[
-                { action: "New booking", service: "Hair Styling", time: "2 hours ago", status: "confirmed" },
-                { action: "Service updated", service: "Massage Therapy", time: "5 hours ago", status: "updated" },
-                { action: "Payment received", service: "Consultation", time: "1 day ago", status: "paid" },
-                { action: "New review", service: "Hair Styling", time: "2 days ago", status: "review" }
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-2 h-2 rounded-full ${
-                      activity.status === 'confirmed' ? 'bg-green-400' :
-                      activity.status === 'updated' ? 'bg-blue-400' :
-                      activity.status === 'paid' ? 'bg-gold-400' :
-                      'bg-purple-400'
-                    }`} />
-                    <div>
-                      <p className="text-white font-medium">{activity.action}</p>
-                      <p className="text-sm text-obsidian-400">{activity.service}</p>
-                    </div>
-                  </div>
-                  <span className="text-sm text-obsidian-500">{activity.time}</span>
+              {loading ? (
+                <div className="animate-pulse space-y-3">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-12 bg-white/5 rounded-lg"></div>
+                  ))}
                 </div>
-              ))}
+              ) : recentBookings.length === 0 ? (
+                <p className="text-obsidian-500 text-center py-4">No recent bookings</p>
+              ) : (
+                recentBookings.map((booking, index) => (
+                  <div key={index} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-2 h-2 rounded-full ${getStatusColor(booking.status)}`} />
+                      <div>
+                        <p className="text-white font-medium">New booking for {booking.serviceName}</p>
+                        <p className="text-sm text-obsidian-400">{booking.user?.name} • ${booking.amount}</p>
+                      </div>
+                    </div>
+                    <span className="text-sm text-obsidian-500">{getRelativeTime(booking.bookingDate)}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </motion.div>

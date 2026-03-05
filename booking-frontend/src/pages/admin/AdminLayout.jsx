@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -14,9 +14,41 @@ import {
   Menu,
   X,
   Settings,
-  BarChart3
+  BarChart3,
+  CheckCheck
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { adminNotificationAPI } from '../../api/endpoints'
+import toast from 'react-hot-toast'
+
+// Format relative time
+const getRelativeTime = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now - date
+  const diffSec = Math.floor(diffMs / 1000)
+  const diffMin = Math.floor(diffSec / 60)
+  const diffHour = Math.floor(diffMin / 60)
+  const diffDay = Math.floor(diffHour / 24)
+
+  if (diffSec < 60) return 'Just now'
+  if (diffMin < 60) return `${diffMin} min ago`
+  if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`
+  if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`
+  return date.toLocaleDateString()
+}
+
+// Get notification icon based on type
+const getNotificationIcon = (type) => {
+  const icons = {
+    'USER_REGISTRATION': '👤',
+    'NEW_BOOKING': '📅',
+    'NEW_SERVICE': '🏢',
+    'USER_PROMOTED': '⭐',
+    'PAYMENT_COMPLETED': '💰'
+  }
+  return icons[type] || '📢'
+}
 
 // Sidebar Item Component with premium styling
 const SidebarItem = ({ to, icon: Icon, label, isCollapsed }) => {
@@ -98,17 +130,59 @@ export const AdminLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const handleLogout = () => {
     logout()
     navigate('/')
   }
 
-  const notifications = [
-    { id: 1, title: 'New booking received', time: '2 min ago', type: 'booking' },
-    { id: 2, title: 'User promoted to provider', time: '1 hour ago', type: 'user' },
-    { id: 3, title: 'Payment processed', time: '3 hours ago', type: 'payment' },
-  ]
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const [notifRes, countRes] = await Promise.all([
+        adminNotificationAPI.getNotifications(),
+        adminNotificationAPI.getUnreadCount()
+      ])
+      setNotifications(notifRes.data)
+      setUnreadCount(countRes.data.count)
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error)
+    }
+  }, [])
+
+  // Mark notification as read
+  const handleMarkAsRead = async (id) => {
+    try {
+      await adminNotificationAPI.markAsRead(id)
+      setNotifications(prev => prev.map(n => 
+        n.id === id ? { ...n, isRead: true } : n
+      ))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch (error) {
+      toast.error('Failed to mark notification as read')
+    }
+  }
+
+  // Mark all as read
+  const handleMarkAllAsRead = async () => {
+    try {
+      await adminNotificationAPI.markAllAsRead()
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+      setUnreadCount(0)
+      toast.success('All notifications marked as read')
+    } catch (error) {
+      toast.error('Failed to mark all as read')
+    }
+  }
+
+  // Initial fetch and auto-refresh every 30 seconds
+  useEffect(() => {
+    fetchNotifications()
+    const interval = setInterval(fetchNotifications, 30000)
+    return () => clearInterval(interval)
+  }, [fetchNotifications])
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -174,7 +248,9 @@ export const AdminLayout = () => {
                 className="relative p-2 text-obsidian-400 hover:text-white transition-colors"
               >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-gold-500 rounded-full animate-pulse" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-gold-500 rounded-full animate-pulse" />
+                )}
               </motion.button>
 
               <AnimatePresence>
@@ -185,19 +261,45 @@ export const AdminLayout = () => {
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     className="absolute right-0 top-full mt-2 w-80 bg-obsidian-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
                   >
-                    <div className="p-4 border-b border-white/5">
+                    <div className="p-4 border-b border-white/5 flex items-center justify-between">
                       <h3 className="font-medium text-white">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllAsRead}
+                          className="text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1"
+                        >
+                          <CheckCheck className="w-3 h-3" />
+                          Mark all read
+                        </button>
+                      )}
                     </div>
                     <div className="max-h-64 overflow-y-auto">
-                      {notifications.map((notif) => (
-                        <div
-                          key={notif.id}
-                          className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
-                        >
-                          <p className="text-sm text-white">{notif.title}</p>
-                          <p className="text-xs text-obsidian-500 mt-1">{notif.time}</p>
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-obsidian-500 text-sm">
+                          No notifications
                         </div>
-                      ))}
+                      ) : (
+                        notifications.map((notif) => (
+                          <div
+                            key={notif.id}
+                            onClick={() => !notif.isRead && handleMarkAsRead(notif.id)}
+                            className={`p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${
+                              !notif.isRead ? 'bg-gold-500/5' : ''
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className="text-lg">{getNotificationIcon(notif.type)}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-white">{notif.message}</p>
+                                <p className="text-xs text-obsidian-500 mt-1">{getRelativeTime(notif.createdAt)}</p>
+                              </div>
+                              {!notif.isRead && (
+                                <span className="w-2 h-2 bg-gold-500 rounded-full flex-shrink-0 mt-1" />
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </motion.div>
                 )}

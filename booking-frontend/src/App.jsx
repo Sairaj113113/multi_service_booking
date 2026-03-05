@@ -21,12 +21,15 @@ import { AdminDashboard } from "./pages/admin/AdminDashboard"
 import { AdminUsers } from "./pages/admin/AdminUsers"
 import { AdminBookings } from "./pages/admin/AdminBookings"
 import { AdminProviders } from "./pages/admin/AdminProviders"
+import { AdminAnalytics } from "./pages/admin/AdminAnalytics"
+import { AdminSettings } from "./pages/admin/AdminSettings"
 
 // 🧑‍💼 PROVIDER PAGES
 import ProviderDashboard from "./pages/provider/ProviderDashboard"
 import CreateServicePage from "./pages/provider/CreateServicePage"
 import MyServicesPage from "./pages/provider/MyServicesPage"
 import ManageSlotsPage from "./pages/provider/ManageSlotsPage"
+import { ProviderBookings } from "./pages/provider/ProviderBookings"
 
 const App = () => (
   <AuthProvider>
@@ -91,6 +94,15 @@ const App = () => (
         }
       />
 
+      <Route
+        path="/provider/bookings"
+        element={
+          <ProtectedRoute allowedRoles={["ROLE_PROVIDER"]}>
+            <ProviderBookings />
+          </ProtectedRoute>
+        }
+      />
+
       {/* 👨‍💼 ADMIN ROUTES - Nested under /admin with AdminLayout */}
       <Route
         path="/admin"
@@ -105,6 +117,8 @@ const App = () => (
         <Route path="users" element={<AdminUsers />} />
         <Route path="bookings" element={<AdminBookings />} />
         <Route path="providers" element={<AdminProviders />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
 
       {/* ❌ 404 */}

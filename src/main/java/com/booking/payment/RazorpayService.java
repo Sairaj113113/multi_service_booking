@@ -4,6 +4,7 @@ import com.booking.entity.Booking;
 import com.booking.payment.dto.CreateOrderResponse;
 import com.booking.payment.dto.VerifyPaymentRequest;
 import com.booking.repository.BookingRepository;
+import com.booking.service.AdminNotificationService;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
@@ -24,6 +25,7 @@ public class RazorpayService {
 
     private final RazorpayClient razorpayClient;
     private final BookingRepository bookingRepository;
+    private final AdminNotificationService notificationService;
 
     @Value("${razorpay.key-id}")
     private String keyId;
@@ -32,9 +34,11 @@ public class RazorpayService {
     private String keySecret;
 
     public RazorpayService(RazorpayClient razorpayClient,
-                           BookingRepository bookingRepository) {
+                           BookingRepository bookingRepository,
+                           AdminNotificationService notificationService) {
         this.razorpayClient = razorpayClient;
         this.bookingRepository = bookingRepository;
+        this.notificationService = notificationService;
     }
 
     // ============================================
@@ -127,6 +131,9 @@ public class RazorpayService {
             booking.setPaidAt(LocalDateTime.now());
 
             bookingRepository.save(booking);
+
+            // Create admin notification for payment completion
+            notificationService.createPaymentCompletedNotification(booking, booking.getAmount());
 
             logger.info("Payment verified for booking {}", booking.getId());
 

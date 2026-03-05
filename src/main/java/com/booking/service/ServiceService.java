@@ -20,11 +20,13 @@ public class ServiceService {
     private final ServiceRepository serviceRepository;
     private final SlotRepository slotRepository;
     private final UserRepository userRepository;
+    private final AdminNotificationService notificationService;
 
-    public ServiceService(ServiceRepository serviceRepository, SlotRepository slotRepository, UserRepository userRepository) {
+    public ServiceService(ServiceRepository serviceRepository, SlotRepository slotRepository, UserRepository userRepository, AdminNotificationService notificationService) {
         this.serviceRepository = serviceRepository;
         this.slotRepository = slotRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -42,7 +44,12 @@ public class ServiceService {
                 .provider(provider)
                 .build();
 
-        return mapToResponse(serviceRepository.save(service));
+        com.booking.entity.Service saved = serviceRepository.save(service);
+        
+        // Create admin notification for new service
+        notificationService.createNewServiceNotification(saved, provider);
+
+        return mapToResponse(saved);
     }
 
 @Transactional
