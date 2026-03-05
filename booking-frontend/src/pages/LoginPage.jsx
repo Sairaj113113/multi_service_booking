@@ -29,8 +29,9 @@ export const LoginPage = () => {
     setLoading(true)
     try {
       const user = await login(form)
-      if (user.role === 'ROLE_USER') navigate('/my-bookings')
-      else if (user.role === 'ROLE_PROVIDER') navigate('/services')
+      if (user.role === 'ROLE_ADMIN') navigate('/admin')
+      else if (user.role === 'ROLE_USER') navigate('/my-bookings')
+      else if (user.role === 'ROLE_PROVIDER') navigate('/provider')
       else navigate(from)
     } catch (err) {
       setErrors({ general: err.response?.data?.message || 'Invalid credentials' })

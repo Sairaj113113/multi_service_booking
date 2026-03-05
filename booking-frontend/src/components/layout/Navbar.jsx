@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 
@@ -21,8 +21,11 @@ export const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const { isAuthenticated, user, logout, isUser, isProvider, isAdmin } = useAuth()
-
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Check if current path is an admin route
+  const isAdminRoute = location.pathname.startsWith('/admin')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -49,21 +52,35 @@ export const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
 
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-gold-gradient flex items-center justify-center shadow-gold">
-            <span className="text-obsidian-950 font-display font-bold text-sm">L</span>
-          </div>
-          <span className="font-display text-lg font-semibold tracking-wide">
-            <span className="gold-text">Luxe</span>
-            <span className="text-white">Book</span>
-          </span>
-        </Link>
+        {/* Left side: Back to Website button (for admin on admin pages) + Logo */}
+        <div className="flex items-center gap-4">
+          {isAdmin && isAdminRoute && (
+            <motion.button
+              onClick={() => navigate('/')}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 text-sm text-gold-400 border border-gold-500/50 rounded-lg hover:bg-gold-500 hover:text-obsidian-950 transition-all duration-300"
+            >
+              <span>←</span>
+              <span>Back to Website</span>
+            </motion.button>
+          )}
+
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-lg bg-gold-gradient flex items-center justify-center shadow-gold">
+              <span className="text-obsidian-950 font-display font-bold text-sm">L</span>
+            </div>
+            <span className="font-display text-lg font-semibold tracking-wide">
+              <span className="gold-text">Luxe</span>
+              <span className="text-white">Book</span>
+            </span>
+          </Link>
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8">
 
-          <NavItem to="/services">Services</NavItem>
+          {!isAuthenticated || !isAdmin && <NavItem to="/services">Services</NavItem>}
 
           {isAuthenticated && isUser && (
             <NavItem to="/my-bookings">My Bookings</NavItem>
@@ -78,7 +95,12 @@ export const Navbar = () => {
           )}
 
           {isAuthenticated && isAdmin && (
-            <NavItem to="/admin/dashboard">Admin</NavItem>
+            <>
+              <NavItem to="/admin/dashboard">Dashboard</NavItem>
+              <NavItem to="/admin/users">Users</NavItem>
+              <NavItem to="/admin/bookings">Bookings</NavItem>
+              <NavItem to="/admin/providers">Providers</NavItem>
+            </>
           )}
 
         </nav>
@@ -137,9 +159,21 @@ export const Navbar = () => {
           >
             <div className="px-6 py-4 space-y-4">
 
-              <Link to="/services" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
-                Services
-              </Link>
+              {/* Mobile Back to Website button for admin */}
+              {isAdmin && (
+                <button
+                  onClick={() => { navigate('/'); setMobileOpen(false); }}
+                  className="block w-full text-left text-gold-400 hover:text-gold-300 py-2"
+                >
+                  ← Back to Website
+                </button>
+              )}
+
+              {!isAuthenticated || !isAdmin && (
+                <Link to="/services" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                  Services
+                </Link>
+              )}
 
               {isAuthenticated && isUser && (
                 <Link to="/my-bookings" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
@@ -164,9 +198,20 @@ export const Navbar = () => {
               )}
 
               {isAuthenticated && isAdmin && (
-                <Link to="/admin/dashboard" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
-                  Admin
-                </Link>
+                <>
+                  <Link to="/admin/dashboard" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                    Dashboard
+                  </Link>
+                  <Link to="/admin/users" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                    Users
+                  </Link>
+                  <Link to="/admin/bookings" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                    Bookings
+                  </Link>
+                  <Link to="/admin/providers" onClick={() => setMobileOpen(false)} className="block text-obsidian-200 hover:text-gold-400 py-2">
+                    Providers
+                  </Link>
+                </>
               )}
 
               <div className="pt-2 border-t border-white/5 space-y-3">

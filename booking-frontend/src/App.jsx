@@ -1,6 +1,6 @@
 import React from "react"
 import { Routes, Route, Navigate } from "react-router-dom"
-import { AuthProvider } from "./context/AuthContext"
+import { AuthProvider, useAuth } from "./context/AuthContext"
 import { ProtectedRoute } from "./components/layout/ProtectedRoute"
 
 // 🌐 PUBLIC PAGES
@@ -58,7 +58,6 @@ const App = () => (
       />
 
       {/* 🧑‍💼 PROVIDER ROUTES */}
-
       <Route
         path="/provider"
         element={
@@ -67,7 +66,6 @@ const App = () => (
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/provider/create-service"
         element={
@@ -76,7 +74,6 @@ const App = () => (
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/provider/services"
         element={
@@ -85,7 +82,6 @@ const App = () => (
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/provider/services/:id/slots"
         element={
@@ -95,7 +91,7 @@ const App = () => (
         }
       />
 
-      {/* 👨‍💼 ADMIN ROUTES - Nested with Layout */}
+      {/* 👨‍💼 ADMIN ROUTES - Nested under /admin with AdminLayout */}
       <Route
         path="/admin"
         element={
