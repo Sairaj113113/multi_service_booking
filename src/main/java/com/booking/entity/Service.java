@@ -1,10 +1,11 @@
 package com.booking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "services")
@@ -34,8 +35,17 @@ public class Service {
     @Column(nullable = false)
     private Integer durationMinutes;
 
+    @Column(length = 255)
+private String location;
+
+    // 🔹 PROVIDER RELATION
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id")
     @JsonIgnore
     private User provider;
+
+    // 🔥 ADD THIS (VERY IMPORTANT)
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Slot> slots;
 }

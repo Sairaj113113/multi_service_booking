@@ -19,4 +19,5 @@ public class ServiceResponse {
     private Integer durationMinutes;
     private Long providerId;
     private String providerName;
+    private String location;
 }

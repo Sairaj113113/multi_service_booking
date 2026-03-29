@@ -59,10 +59,10 @@ public class AdminService {
         long totalProviders = allUsers.stream()
                 .filter(u -> u.getRole() == User.Role.ROLE_PROVIDER)
                 .count();
-        long totalBookings = allBookings.size();
-        long activeBookings = allBookings.stream()
-                .filter(b -> b.getStatus() == Booking.BookingStatus.CONFIRMED)
-                .count();
+       long activeBookings = allBookings.stream()
+        .filter(b -> b.getStatus() == Booking.BookingStatus.BOOKED
+                  || b.getStatus() == Booking.BookingStatus.PENDING_PAYMENT)
+        .count();
         long cancelledBookings = allBookings.stream()
                 .filter(b -> b.getStatus() == Booking.BookingStatus.CANCELLED)
                 .count();
@@ -83,15 +83,16 @@ public class AdminService {
                 .map(Booking::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        long totalBookings = allBookings.stream().count();
         return AdminDashboardStats.builder()
-                .totalUsers(totalUsers)
-                .totalProviders(totalProviders)
-                .totalBookings(totalBookings)
-                .activeBookings(activeBookings)
-                .cancelledBookings(cancelledBookings)
-                .totalRevenue(totalRevenue)
-                .todayRevenue(todayRevenue)
-                .build();
+        .totalUsers(totalUsers)
+        .totalProviders(totalProviders)
+        .totalBookings(totalBookings)
+        .activeBookings(activeBookings)
+        .cancelledBookings(cancelledBookings)
+        .totalRevenue(totalRevenue)
+        .todayRevenue(todayRevenue)
+        .build();
     }
 
     @Transactional(readOnly = true)

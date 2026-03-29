@@ -11,6 +11,7 @@ import com.booking.repository.SlotRepository;
 import com.booking.security.CustomUserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,13 +34,11 @@ public class SlotService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Service not found with id: " + request.getServiceId()));
 
-        // 🔐 Provider ownership check
         if (!service.getProvider().getId().equals(currentUser.getId())) {
             throw new com.booking.exception.AccessDeniedException(
                     "You can only create slots for your own services");
         }
 
-        // ⏱ Time validation
         if (!request.getEndTime().isAfter(request.getStartTime())) {
             throw new BadRequestException("End time must be after start time");
         }
@@ -67,6 +66,7 @@ public class SlotService {
                 .collect(Collectors.toList());
     }
 
+    // 🔥 FINAL FIXED METHOD
     @Transactional(readOnly = true)
     public List<SlotResponse> getAvailableSlotsByService(Long serviceId) {
 
@@ -74,7 +74,10 @@ public class SlotService {
             throw new ResourceNotFoundException("Service not found with id: " + serviceId);
         }
 
-        return slotRepository.findByServiceIdAndAvailableTrue(serviceId)
+        return slotRepository
+                .findByServiceIdAndAvailableTrueAndStartTimeAfter(
+                        serviceId, LocalDateTime.now()
+                )
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.math.BigDecimal;
 
+
 @Data
 public class ServiceRequest {
 
@@ -26,4 +27,7 @@ public class ServiceRequest {
     @Min(value = 1, message = "Duration must be at least 1 minute")
     @Max(value = 480, message = "Duration cannot exceed 8 hours")
     private Integer durationMinutes;
+
+    @Size(max = 255, message = "Location is too long")
+    private String location;
 }

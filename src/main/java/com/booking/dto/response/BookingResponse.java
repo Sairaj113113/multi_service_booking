@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingResponse {
-    private Long id;
+
+    private Long bookingId;   // ✅ FIXED
+
     private Long userId;
     private String userName;
     private Long slotId;
@@ -26,4 +28,5 @@ public class BookingResponse {
     private String currency;
     private String paymentReference;
     private LocalDateTime paidAt;
+    private String location;
 }

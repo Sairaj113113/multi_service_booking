@@ -2,8 +2,10 @@ package com.booking.service;
 
 import com.booking.dto.request.ServiceRequest;
 import com.booking.dto.response.ServiceResponse;
+import com.booking.entity.Slot;
 import com.booking.entity.User;
 import com.booking.exception.ResourceNotFoundException;
+import com.booking.repository.BookingRepository;
 import com.booking.repository.ServiceRepository;
 import com.booking.repository.SlotRepository;
 import com.booking.repository.UserRepository;
@@ -11,6 +13,9 @@ import com.booking.security.CustomUserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,15 +25,23 @@ public class ServiceService {
     private final ServiceRepository serviceRepository;
     private final SlotRepository slotRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository; // 🔥 ADD THIS
     private final AdminNotificationService notificationService;
 
-    public ServiceService(ServiceRepository serviceRepository, SlotRepository slotRepository, UserRepository userRepository, AdminNotificationService notificationService) {
+    public ServiceService(ServiceRepository serviceRepository,
+                          SlotRepository slotRepository,
+                          UserRepository userRepository,
+                          BookingRepository bookingRepository, // 🔥 ADD
+                          AdminNotificationService notificationService) {
         this.serviceRepository = serviceRepository;
         this.slotRepository = slotRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
         this.notificationService = notificationService;
+        
     }
 
+    // ✅ CREATE SERVICE
     @Transactional
     public ServiceResponse createService(ServiceRequest request, CustomUserDetails currentUser) {
 
@@ -41,34 +54,63 @@ public class ServiceService {
                 .imageUrl(request.getImageUrl())
                 .price(request.getPrice())
                 .durationMinutes(request.getDurationMinutes())
+                .location(request.getLocation())                
                 .provider(provider)
                 .build();
+                
 
         com.booking.entity.Service saved = serviceRepository.save(service);
-        
-        // Create admin notification for new service
+
         notificationService.createNewServiceNotification(saved, provider);
 
         return mapToResponse(saved);
     }
 
-@Transactional
-public void deleteService(Long serviceId, CustomUserDetails currentUser) {
+    // ✅ DELETE SERVICE (FINAL FIX)
+    @Transactional
+    public void deleteService(Long serviceId, CustomUserDetails currentUser) {
 
-    boolean isOwner = serviceRepository
-            .existsByIdAndProviderId(serviceId, currentUser.getId());
+        // 🔹 Fetch service
+        com.booking.entity.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
-    if (!isOwner) {
-        throw new com.booking.exception.AccessDeniedException(
-                "You can only delete your own services");
+        // 🔒 Ownership check
+        if (!service.getProvider().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        // 🔥 Delete image file
+        try {
+            String imageUrl = service.getImageUrl();
+
+            if (imageUrl != null && imageUrl.contains("/uploads/")) {
+                String fileName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+                Path filePath = Paths.get("uploads").resolve(fileName);
+                Files.deleteIfExists(filePath);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 🔥 STEP 1: DELETE BOOKINGS FIRST
+        List<Slot> slots = slotRepository.findByServiceId(serviceId);
+
+        for (Slot slot : slots) {
+            bookingRepository.findBySlotId(slot.getId())
+                    .forEach(bookingRepository::delete);
+        }
+
+        // 🔥 STEP 2: DELETE SLOTS
+        for (Slot slot : slots) {
+            slotRepository.delete(slot);
+        }
+
+        // 🔥 STEP 3: DELETE SERVICE
+        serviceRepository.delete(service);
     }
 
-    // Delete all slots associated with this service first
-    slotRepository.deleteByServiceId(serviceId);
-
-    serviceRepository.deleteById(serviceId);
-}
-
+    // ✅ GET ALL
     @Transactional(readOnly = true)
     public List<ServiceResponse> getAllServices() {
         return serviceRepository.findAll()
@@ -77,6 +119,7 @@ public void deleteService(Long serviceId, CustomUserDetails currentUser) {
                 .collect(Collectors.toList());
     }
 
+    // ✅ GET BY ID
     @Transactional(readOnly = true)
     public ServiceResponse getServiceById(Long id) {
 
@@ -86,6 +129,7 @@ public void deleteService(Long serviceId, CustomUserDetails currentUser) {
         return mapToResponse(service);
     }
 
+    // ✅ MAPPER
     private ServiceResponse mapToResponse(com.booking.entity.Service service) {
 
         return ServiceResponse.builder()
@@ -97,6 +141,7 @@ public void deleteService(Long serviceId, CustomUserDetails currentUser) {
                 .durationMinutes(service.getDurationMinutes())
                 .providerId(service.getProvider().getId())
                 .providerName(service.getProvider().getName())
+                .location(service.getLocation())        
                 .build();
     }
 }

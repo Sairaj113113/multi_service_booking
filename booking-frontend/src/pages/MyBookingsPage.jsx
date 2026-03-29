@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom'
 const tabs = [
   { key: 'all', label: 'All' },
   { key: 'PENDING_PAYMENT', label: 'Pending Payment' },
-  { key: 'CONFIRMED', label: 'Active' },
+  { key: 'BOOKED', label: 'Active' }, // ✅ FIXED
   { key: 'CANCELLED', label: 'Cancelled' },
 ]
 
@@ -32,11 +32,23 @@ export const MyBookingsPage = () => {
   }, [])
 
   const handleCancelled = (id) => {
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status: 'CANCELLED' } : b))
+    setBookings(prev =>
+      prev.map(b =>
+        b.id === id ? { ...b, status: 'CANCELLED' } : b
+      )
+    )
   }
 
-  const filtered = activeTab === 'all' ? bookings : bookings.filter(b => b.status === activeTab)
-  const activeCount = bookings.filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING_PAYMENT').length
+  // ✅ FILTER FIX
+  const filtered =
+    activeTab === 'all'
+      ? bookings
+      : bookings.filter(b => b.status === activeTab)
+
+  // ✅ ACTIVE COUNT FIX
+  const activeCount = bookings.filter(
+    b => b.status === 'BOOKED'
+  ).length
 
   return (
     <PageLayout>
@@ -46,17 +58,26 @@ export const MyBookingsPage = () => {
         <div className="max-w-4xl mx-auto relative z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <SectionLabel>Your Account</SectionLabel>
+
             <div className="flex items-start justify-between gap-4 mt-6 flex-wrap">
               <div>
                 <h1 className="font-display text-4xl md:text-5xl mb-2">
                   My <span className="gold-text italic">Bookings</span>
                 </h1>
-                <p className="text-obsidian-300 text-sm">Welcome back, <span className="text-gold-400">{user?.name}</span></p>
+
+                <p className="text-obsidian-300 text-sm">
+                  Welcome back, <span className="text-gold-400">{user?.name}</span>
+                </p>
               </div>
+
               {activeCount > 0 && (
                 <div className="glass-card px-5 py-3 text-center">
-                  <p className="text-3xl font-display gold-text font-semibold">{activeCount}</p>
-                  <p className="text-obsidian-400 text-xs font-mono">Active Booking{activeCount !== 1 ? 's' : ''}</p>
+                  <p className="text-3xl font-display gold-text font-semibold">
+                    {activeCount}
+                  </p>
+                  <p className="text-obsidian-400 text-xs font-mono">
+                    Active Booking{activeCount !== 1 ? 's' : ''}
+                  </p>
                 </div>
               )}
             </div>
@@ -66,16 +87,23 @@ export const MyBookingsPage = () => {
 
       {/* Content */}
       <section className="max-w-4xl mx-auto px-6 py-12">
+
         {/* Tabs */}
         <div className="flex items-center gap-2 mb-8 p-1 bg-obsidian-800/40 rounded-xl border border-white/5 w-fit">
           {tabs.map(tab => {
-            const count = tab.key === 'all' ? bookings.length : bookings.filter(b => b.status === tab.key).length
+            const count =
+              tab.key === 'all'
+                ? bookings.length
+                : bookings.filter(b => b.status === tab.key).length
+
             return (
               <motion.button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative px-5 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                  activeTab === tab.key ? 'text-obsidian-950' : 'text-obsidian-400 hover:text-white'
+                  activeTab === tab.key
+                    ? 'text-obsidian-950'
+                    : 'text-obsidian-400 hover:text-white'
                 }`}
               >
                 {activeTab === tab.key && (
@@ -84,11 +112,17 @@ export const MyBookingsPage = () => {
                     className="absolute inset-0 bg-gold-gradient rounded-lg"
                   />
                 )}
+
                 <span className="relative z-10">{tab.label}</span>
+
                 {count > 0 && (
-                  <span className={`relative z-10 ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
-                    activeTab === tab.key ? 'bg-obsidian-950/30 text-obsidian-950' : 'bg-obsidian-700/60 text-obsidian-300'
-                  }`}>
+                  <span
+                    className={`relative z-10 ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                      activeTab === tab.key
+                        ? 'bg-obsidian-950/30 text-obsidian-950'
+                        : 'bg-obsidian-700/60 text-obsidian-300'
+                    }`}
+                  >
                     {count}
                   </span>
                 )}
@@ -110,12 +144,28 @@ export const MyBookingsPage = () => {
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={activeTab === 'CANCELLED' ? '🗑' : '📅'}
-            title={activeTab === 'all' ? 'No Bookings Yet' : activeTab === 'CONFIRMED' ? 'No Active Bookings' : 'No Cancelled Bookings'}
-            description={activeTab === 'all' ? 'Start by exploring our services and booking your first appointment.' : 'Nothing here yet.'}
-            action={activeTab !== 'CANCELLED' ? {
-              label: 'Browse Services',
-              onClick: () => navigate('/services')
-            } : undefined}
+            title={
+              activeTab === 'all'
+                ? 'No Bookings Yet'
+                : activeTab === 'BOOKED'
+                ? 'No Active Bookings'
+                : activeTab === 'PENDING_PAYMENT'
+                ? 'No Pending Payments'
+                : 'No Cancelled Bookings'
+            }
+            description={
+              activeTab === 'all'
+                ? 'Start by exploring our services and booking your first appointment.'
+                : 'Nothing here yet.'
+            }
+            action={
+              activeTab !== 'CANCELLED'
+                ? {
+                    label: 'Browse Services',
+                    onClick: () => navigate('/services'),
+                  }
+                : undefined
+            }
           />
         ) : (
           <motion.div layout className="space-y-4">

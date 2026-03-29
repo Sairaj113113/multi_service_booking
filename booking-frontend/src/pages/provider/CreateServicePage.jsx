@@ -9,32 +9,55 @@ export default function CreateServicePage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    imageUrl: "",
     price: "",
-    durationMinutes: ""
+    durationMinutes: "",
+    location: ""    
   })
 
+  
+
+  const [imageFile, setImageFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0])
+  }
   const handleSubmit = async (e) => {
     e.preventDefault()
-  
+
     if (loading) return
-  
+    if (!imageFile) {
+      toast.error("Please select an image")
+      return
+    }
+
     setLoading(true)
-  
+
     try {
-      await api.post("/api/services", form, {
-        headers:{
-          Authorization:`Bearer ${localStorage.getItem("token")}`
+      const formData = new FormData()
+      formData.append("name", form.name)
+      formData.append("description", form.description)
+      formData.append("price", form.price)
+      formData.append("durationMinutes", form.durationMinutes)
+      formData.append("image", imageFile)
+      formData.append("location", form.location)
+      
+      await api.post("/api/services", formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "multipart/form-data"
         }
       })
-      toast.success("Service created")
+
+      toast.success("Service created 🚀")
       navigate("/provider/services")
+
+    } catch (err) {
+      toast.error("Failed to create service")
     } finally {
       setLoading(false)
     }
@@ -43,9 +66,15 @@ export default function CreateServicePage() {
   return (
     <PageLayout title="Create Service">
 
-      <div className="mx-auto w-full max-w-3xl">
+      {/* 🔥 MAIN GRID */}
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
 
-        <form onSubmit={handleSubmit} className="card-glass space-y-6 p-6">
+        {/* ================= LEFT (FORM) ================= */}
+        <form onSubmit={handleSubmit} className="card-glass space-y-6 p-8">
+
+          <h2 className="text-2xl font-semibold text-gold-400">
+            Create Service
+          </h2>
 
           {/* NAME */}
           <div>
@@ -68,26 +97,45 @@ export default function CreateServicePage() {
               value={form.description}
               onChange={handleChange}
               className="input mt-2"
-              placeholder="Professional haircut"
               rows={4}
+              placeholder="Professional haircut"
             />
           </div>
+
+          <div>
+  <label className="text-sm text-obsidian-300">Location</label>
+  <input
+    name="location"
+    value={form.location}
+    onChange={handleChange}
+    className="input mt-2"
+    placeholder="Hyderabad, Madhapur"
+    required
+  />
+</div>
 
           {/* IMAGE */}
           <div>
-            <label className="text-sm text-obsidian-300">Service Image URL</label>
+            <label className="text-sm text-obsidian-300">Upload Image</label>
             <input
-              type="url"
-              name="imageUrl"
-              value={form.imageUrl}
-              onChange={handleChange}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
               className="input mt-2"
-              placeholder="https://images.example.com/service.jpg"
+              required
             />
+
+            {imageFile && (
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt="preview"
+                className="mt-3 rounded-lg w-32 h-32 object-cover border border-white/10"
+              />
+            )}
           </div>
 
+          {/* PRICE + DURATION */}
           <div className="grid gap-5 md:grid-cols-2">
-            {/* PRICE */}
             <div>
               <label className="text-sm text-obsidian-300">Price</label>
               <input
@@ -101,9 +149,8 @@ export default function CreateServicePage() {
               />
             </div>
 
-            {/* DURATION */}
             <div>
-              <label className="text-sm text-obsidian-300">Duration (minutes)</label>
+              <label className="text-sm text-obsidian-300">Duration</label>
               <input
                 type="number"
                 name="durationMinutes"
@@ -116,22 +163,72 @@ export default function CreateServicePage() {
             </div>
           </div>
 
+          {/* BUTTON */}
           <button
-            className="btn-gold w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="btn-gold w-full flex items-center justify-center gap-2 text-lg"
             disabled={loading}
             type="submit"
-            whileHover={{ scale: loading ? 1 : 1.01 }}
-            whileTap={{ scale: loading ? 1 : 0.98 }}
           >
             {loading ? (
-                <>
+              <>
                 <div className="w-4 h-4 rounded-full border-2 border-obsidian-800/40 border-t-obsidian-950 animate-spin" />
-                Creating service...
+                Creating...
               </>
-            ) : 'Create Service'}
-          </button>  
+            ) : 'Create Service'}     
+          </button>
+
         </form>
+
+        {/* ================= RIGHT (LIVE PREVIEW) ================= */}
+        <div className="card-glass p-6">
+
+          <h3 className="text-lg text-white mb-4">
+            Live Preview
+          </h3>
+
+          <div className="rounded-xl overflow-hidden border border-white/10">
+
+            {/* IMAGE */}
+            <div className="h-48 bg-obsidian-900 flex items-center justify-center">
+              {imageFile ? (
+                <img
+                  src={URL.createObjectURL(imageFile)}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-obsidian-500 text-sm">
+                  Image Preview
+                </span>
+              )}
+            </div>
+
+            {/* CONTENT */}
+            <div className="p-4 space-y-2">
+
+              <h3 className="text-gold-400 font-semibold text-lg">
+                {form.name || "Service Name"}
+              </h3>
+
+              <p className="text-sm text-obsidian-300">
+                {form.description || "Service description"}
+              </p>
+
+              <div className="flex justify-between text-sm pt-2">
+                <span className="text-white">
+                  ₹{form.price || "0"}
+                </span>
+                <span className="text-obsidian-400">
+                  {form.durationMinutes || "0"} mins
+                </span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+              
       </div>
+
+
     </PageLayout>
   )
-}           
+}

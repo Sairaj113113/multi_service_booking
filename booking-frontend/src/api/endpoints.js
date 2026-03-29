@@ -1,82 +1,104 @@
 import api from './api'
 
-// Auth
+// ── Auth ────────────────────────────────────────────────────────────────────
+
 export const authAPI = {
   register: (data) => api.post('/api/auth/register', data),
-  login: (data) => api.post('/api/auth/login', data),
+  login:    (data) => api.post('/api/auth/login', data),
 }
 
-// Services
+// ── Services ────────────────────────────────────────────────────────────────
+
 export const servicesAPI = {
-  getAll: () => api.get('/api/services'),
-  getById: (id) => api.get(`/api/services/${id}`),
-  create: (data) => api.post('/api/services', data),
+  getAll:  ()     => api.get('/api/services'),
+  getById: (id)   => api.get(`/api/services/${id}`),
+  create:  (data) => api.post('/api/services', data),
 }
 
-// Slots
+// ── Slots ───────────────────────────────────────────────────────────────────
+
 export const slotsAPI = {
-  getByService: (serviceId) => api.get(`/api/slots/service/${serviceId}`),
+  getByService:          (serviceId) => api.get(`/api/slots/service/${serviceId}`),
   getAvailableByService: (serviceId) => api.get(`/api/slots/service/${serviceId}/available`),
-  create: (data) => api.post('/api/slots', data),
+  create:                (data)      => api.post('/api/slots', data),
 }
 
-// Bookings
+// ── Bookings (User) ─────────────────────────────────────────────────────────
+
 export const bookingsAPI = {
-  book: (data) => api.post('/api/bookings', data),
-  cancel: (id) => api.put(`/api/bookings/${id}/cancel`),
-  getMyBookings: () => api.get('/api/bookings/my'),
-  pay: (id, data) => api.put(`/api/bookings/${id}/pay`, data),
+  book:          (data) => api.post('/api/bookings', data),
+  cancel:        (id)   => api.put(`/api/bookings/${id}/cancel`),
+  pay:           (id, data) => api.put(`/api/bookings/${id}/pay`, data),
+  getMyBookings: ()     => api.get('/api/bookings/my'),
 }
 
-// Payments
+// ── Payments (Razorpay) ─────────────────────────────────────────────────────
+
 export const paymentsAPI = {
-  createOrder: (bookingId) => api.post(`/api/payments/create-order/${bookingId}`),
-  verifyPayment: (data) => api.post('/api/payments/verify', data),
+  /**
+   * Creates a Razorpay order for an existing booking.
+   * Safe to call multiple times (retry support) — backend issues a fresh order each time.
+   */
+  createOrder:   (bookingId) => api.post(`/api/payments/create-order/${bookingId}`),
+  verifyPayment: (data)      => api.post('/api/payments/verify', data),
 }
 
-// Admin
+// ── Provider Bookings ───────────────────────────────────────────────────────
+
+export const providerBookingAPI = {
+  getBookings:     ()   => api.get('/api/provider/bookings'),
+  /**
+   * Accept a PENDING_PAYMENT booking (used for CASH bookings).
+   * Online bookings are auto-accepted via Razorpay payment verification.
+   */
+  acceptBooking:   (id) => api.put(`/api/provider/bookings/${id}/accept`),
+  /**
+   * Mark a BOOKED (active) booking as COMPLETED.
+   */
+  completeBooking: (id) => api.put(`/api/provider/bookings/${id}/complete`),
+  cancelBooking:   (id) => api.put(`/api/provider/bookings/${id}/cancel`),
+}
+
+// ── Admin ───────────────────────────────────────────────────────────────────
+
 export const adminAPI = {
-  getDashboardStats: () => api.get('/api/admin/dashboard'),
-  getAllUsers: () => api.get('/api/admin/users'),
-  getAllBookings: () => api.get('/api/admin/bookings'),
-  cancelBooking: (id) => api.put(`/api/admin/bookings/${id}/cancel`),
-  getAllProviders: () => api.get('/api/admin/providers'),
-  promoteUser: (id) => api.put(`/api/admin/users/${id}/promote`),
+  getDashboardStats: ()   => api.get('/api/admin/dashboard'),
+  getAllUsers:        ()   => api.get('/api/admin/users'),
+  getAllBookings:     ()   => api.get('/api/admin/bookings'),
+  cancelBooking:     (id) => api.put(`/api/admin/bookings/${id}/cancel`),
+  getAllProviders:    ()   => api.get('/api/admin/providers'),
+  promoteUser:       (id) => api.put(`/api/admin/users/${id}/promote`),
 }
 
-// Admin Analytics
+// ── Admin Analytics ─────────────────────────────────────────────────────────
+
 export const adminAnalyticsAPI = {
-  getOverview: () => api.get('/api/admin/analytics/overview'),
-  getBookingsTrend: () => api.get('/api/admin/analytics/bookings-trend'),
-  getRevenueTrend: () => api.get('/api/admin/analytics/revenue-trend'),
+  getOverview:            () => api.get('/api/admin/analytics/overview'),
+  getBookingsTrend:       () => api.get('/api/admin/analytics/bookings-trend'),
+  getRevenueTrend:        () => api.get('/api/admin/analytics/revenue-trend'),
   getServiceDistribution: () => api.get('/api/admin/analytics/service-distribution'),
   getProviderPerformance: () => api.get('/api/admin/analytics/provider-performance'),
 }
 
-// Admin Settings
+// ── Admin Settings ──────────────────────────────────────────────────────────
+
 export const adminSettingsAPI = {
-  getSettings: () => api.get('/api/admin/settings'),
+  getSettings:    ()     => api.get('/api/admin/settings'),
   updateSettings: (data) => api.put('/api/admin/settings', data),
 }
 
-// Admin Notifications
+// ── Admin Notifications ─────────────────────────────────────────────────────
+
 export const adminNotificationAPI = {
-  getNotifications: () => api.get('/api/admin/notifications'),
-  getUnreadCount: () => api.get('/api/admin/notifications/unread-count'),
-  markAsRead: (id) => api.put(`/api/admin/notifications/${id}/read`),
-  markAllAsRead: () => api.put('/api/admin/notifications/read-all'),
+  getNotifications: ()   => api.get('/api/admin/notifications'),
+  getUnreadCount:   ()   => api.get('/api/admin/notifications/unread-count'),
+  markAsRead:       (id) => api.put(`/api/admin/notifications/${id}/read`),
+  markAllAsRead:    ()   => api.put('/api/admin/notifications/read-all'),
 }
 
-// Provider Bookings
-export const providerBookingAPI = {
-  getBookings: () => api.get('/api/provider/bookings'),
-  acceptBooking: (id) => api.put(`/api/provider/bookings/${id}/accept`),
-  completeBooking: (id) => api.put(`/api/provider/bookings/${id}/complete`),
-  cancelBooking: (id) => api.put(`/api/provider/bookings/${id}/cancel`),
-}
+// ── Users ───────────────────────────────────────────────────────────────────
 
-// Users
 export const usersAPI = {
-  getMe: () => api.get('/api/users/me'),
+  getMe:    ()     => api.get('/api/users/me'),
   updateMe: (data) => api.put('/api/users/me', data),
 }
