@@ -20,7 +20,7 @@ public class BookingSystemApplication {
     @Bean
     public CommandLineRunner createAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            String adminEmail = "admin@luxebook.com";
+            String adminEmail = "luxeadmin@luxebook.com";
 
             if (userRepository.findByEmail(adminEmail).isEmpty()) {
 
