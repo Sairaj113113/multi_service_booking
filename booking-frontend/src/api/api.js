@@ -5,7 +5,7 @@ import axios from 'axios'
 console.log(import.meta.env.VITE_API_BASE_URL);
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+ baseURL: "https://multi-service-booking.onrender.com",
   headers: {
     'Content-Type': 'application/json',
   },
