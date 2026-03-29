@@ -18,9 +18,10 @@ public class CorsConfig {
         config.setAllowCredentials(true);
 
         config.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "https://multi-service-booking-frontend.onrender.com"
-        ));
+    "http://localhost:3000",
+    "https://multi-service-booking-frontend.onrender.com",
+    "https://multi-service-booking.vercel.app"   // 🔥 ADD THIS
+));
 
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
