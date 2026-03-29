@@ -16,4 +16,3 @@ target/
 # frontend (IMPORTANT)
 node_modules/
 .vite/
-dist/
