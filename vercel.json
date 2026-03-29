@@ -3,7 +3,7 @@
     { "src": "booking-frontend/dist/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/booking-frontend/dist/index.html" }
+    { "src": "^/assets/(.*)", "dest": "/booking-frontend/dist/assets/$1" },
+    { "src": "^/(.*)", "dest": "/booking-frontend/dist/index.html" }
   ]
 }
