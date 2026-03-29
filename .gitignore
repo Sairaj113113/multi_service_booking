@@ -9,3 +9,6 @@ target/
 
 # IDE
 .idea/
+
+!uploads/
+!uploads/**
