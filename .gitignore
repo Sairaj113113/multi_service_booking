@@ -1,14 +1,19 @@
 # local env
+.env
 .env.local
 
-# H2 database
+# backend
 data/
-
-# Maven build
 target/
 
 # IDE
 .idea/
 
+# uploads
 !uploads/
 !uploads/**
+
+# frontend (IMPORTANT)
+node_modules/
+.vite/
+dist/
