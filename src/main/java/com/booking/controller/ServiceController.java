@@ -60,7 +60,7 @@ public ResponseEntity<ServiceResponse> createService(
         request.setLocation(location); // ✅ VERY IMPORTANT
 
         // 🔹 Store image URL
-        request.setImageUrl("http://localhost:8080/uploads/" + fileName);
+        request.setImageUrl("https://multi-service-booking.onrender.com/uploads/" + fileName);
 
         // 🔹 Call service layer
         ServiceResponse response = serviceService.createService(request, currentUser);
