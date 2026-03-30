@@ -18,22 +18,25 @@ public class BookingSystemApplication {
     }
 
     @Bean
-    public CommandLineRunner createAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        return args -> {
-            String adminEmail = "luxeadmin@luxebook.com";
+public CommandLineRunner createAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    return args -> {
 
-            if (userRepository.findByEmail(adminEmail).isEmpty()) {
+        String adminEmail = "luxeadmin@luxebook.com";
 
-                User admin = new User();
-                admin.setName("Admin");
-                admin.setEmail(adminEmail);
-                admin.setPassword(passwordEncoder.encode("admin123"));
-              admin.setRole(User.Role.ROLE_ADMIN);
+        User admin = userRepository.findByEmail(adminEmail)
+                .orElse(new User());
 
-                userRepository.save(admin);
+        admin.setName("Admin");
+        admin.setEmail(adminEmail);
 
-                System.out.println("Admin created!");
-            }
-        };
-    }
+        // 🔥 FORCE RESET PASSWORD EVERY TIME
+        admin.setPassword(passwordEncoder.encode("admin123"));
+
+        admin.setRole(User.Role.ROLE_ADMIN);
+
+        userRepository.save(admin);
+
+        System.out.println("Admin reset done!");
+    };
+}
 }
